@@ -1,38 +1,63 @@
 import React, { useState, useEffect } from 'react'
 
-const Playlist = () => {
-    const[playlist, setPlaylist] = useState([])
-    useEffect(() => {
-        let samplePlaylist = [
-            {
-                title: "Hello World",
-                artist:  "John Doe",
-                album: "It's a Hello World",
-                duration: "3:20"
-            }
-        ]
+// Styling
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPen, faPlus } from '@fortawesome/free-solid-svg-icons'
 
-        setPlaylist(samplePlaylist)
+import '../styles/Playlist.css'
+
+const Playlist = (props) => {
+    const[playlist, setPlaylist] = useState([])
+
+    useEffect(() => {
+        // let samplePlaylist = [
+        //     {
+        //         title: "Hello World",
+        //         artist:  "John Doe",
+        //         album: "It's a Hello World",
+        //         duration: "3:20"
+        //     },
+        //     {
+        //         title: "Hello Me",
+        //         artist:  "John Doe",
+        //         album: "It's a Hello World",
+        //         duration: "3:20"
+        //     }
+        // ]
+
+        // setPlaylist(samplePlaylist)
     }, [])
 
+    const handleAddClick = () => {
+    }
+
     return(
-        <div>
-            <div>
-                <h1>Squad Playlist</h1>
+        <div className="playlist">
+            <div className="playlist-title">
+                <h1 id="squad-playlist-title" contentEditable="true" style={{ marginRight: 10 }}>Squad Playlist</h1>
+                <FontAwesomeIcon className="edit" icon={faPen} />
             </div>
-            <div>
+            <div className="playlist-list">
                 {
                     playlist.map(({ title, artist, album, duration }) => {
                         return([
-                            <div>
-                                 <p>{title}</p>
-                                <p>{artist}</p>
-                                <p>{album}</p>
-                                <p>{duration}</p>
+                            <div className="track">
+                                <div className="track-header">
+                                    <p className="song-title">{title}</p>
+                                    <p style={{ opacity: 0.7 }}>{duration}</p>
+                                </div>
+                                <div className="track-description">
+                                    <p>{artist}</p>
+                                    <p style={{ marginLeft: 10, marginRight: 10 }}>.</p>
+                                    <p>{album}</p>
+                                </div>
                             </div>
                         ])
                     })
                 }
+            </div>
+            <div>
+                <FontAwesomeIcon onClick={handleAddClick} className="add" icon={faPlus} size="2x"/>
             </div>
         </div>
     )
