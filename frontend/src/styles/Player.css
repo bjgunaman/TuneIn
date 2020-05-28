@@ -19,12 +19,16 @@
 }
 
 .upper {
-
+    display: flex;
+    flex-direction: row;
 }
 
 .lower {
+    display: flex;
+    flex-direction: row;
     padding: 0 1.5%;
     opacity: 0.5;
+    align-items: center;
 }
 
 .volume-up {
@@ -37,4 +41,28 @@
 
 .volume-mute:hover {
     color: var(--light-grey-1);
+}
+
+.progress-bar {
+    position: relative;
+    height: 8px;
+    width: 350px;
+    border-radius: 50px;
+    border: none;
+    margin: 0 1rem;
+}
+
+.filler {
+    background: var(--light-grey-1);
+    height: 100%;
+    border-radius: inherit;
+    transition: width .2s ease-in;
+}
+
+.time {
+    display: flex;
+    flex-direction: row;
+    margin-left: 3rem;
+    align-items: center;
+    justify-content: center;
 }

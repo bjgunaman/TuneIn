@@ -1,0 +1,64 @@
+:root {
+    --font-family: 'Open Sans', sans-serif;
+    --open-sans-light: 300;
+    --open-sans-regular: 400;
+    --open-sans-semi-bold: 600;
+    --open-sans-bold: 700;
+}
+
+.edit {
+    opacity: 0.7;
+}
+
+.edit:hover {
+    opacity: 0.5;
+}
+
+.playlist {
+    display: flex;
+    flex-direction: column;
+    color: white;
+}
+
+.playlist-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.playlist-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.track {
+    margin-bottom: 1rem;
+}
+
+.song-title {
+    font-weight: var(--open-sans-semi-bold);
+}
+
+.track-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.track-description {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    opacity: 0.7;
+}
+
+.add {
+    margin-top: 10;
+}
+
+.add:hover {
+    opacity: 0.7;
+}

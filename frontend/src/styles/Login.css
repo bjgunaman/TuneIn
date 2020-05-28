@@ -1,0 +1,45 @@
+:root {
+    --green: #1db954;
+    --light-grey-1: #b3b3b3;
+    --light-grey-2: #535353;
+    --dark-grey: #282828;
+    --font-family: 'Open Sans', sans-serif;
+    --open-sans-light: 300;
+    --open-sans-regular: 400;
+    --open-sans-semi-bold: 600;
+    --open-sans-bold: 700;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login {
+    white-space: nowrap;
+    text-align: center;
+    color: white;
+    background-color: var(--green);
+    padding: 0.7rem;
+    font-size: 1rem;
+    text-align: center;
+    border-radius: 10px;
+    text-decoration: none;
+    border: none;
+    font-family: var(--font-family);
+    font-weight: var(--open-sans-semi-bold);
+}
+
+.login:hover {
+    opacity: 0.7;
+}
+
+.title {
+    text-align: center;
+    margin-top: 20rem;
+    color: white;
+    font-weight: var(--open-sans-light);
+}
+
+

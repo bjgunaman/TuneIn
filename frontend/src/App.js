@@ -1,18 +1,35 @@
 import React from 'react';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect
+} from "react-router-dom";
 
-// Components
-import Playlist from './components/Playlist'
-import Player from './components/Player'
+// Pages
+import Login from './pages/Login'
+import Playlist from './pages/Playlist'
 
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <Playlist/>
-      <button className="invite">Invite</button>
-      <Player />
-    </div>
+    <Router>
+      <Switch>
+        <Route path="/login">
+          <Login />
+        </Route>
+        <Route path="/playlist">
+          <Playlist />
+        </Route>
+      </Switch>
+      <Redirect
+        to={{
+          pathname: "/playlist"
+        }}
+      />
+    </Router>
   );
 }
 

@@ -4,28 +4,28 @@ import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPen, faPlus } from '@fortawesome/free-solid-svg-icons'
 
-import '../styles/Playlist.css'
+import '../styles/List.css'
 
-const Playlist = (props) => {
+const List = (props) => {
     const[playlist, setPlaylist] = useState([])
 
     useEffect(() => {
-        // let samplePlaylist = [
-        //     {
-        //         title: "Hello World",
-        //         artist:  "John Doe",
-        //         album: "It's a Hello World",
-        //         duration: "3:20"
-        //     },
-        //     {
-        //         title: "Hello Me",
-        //         artist:  "John Doe",
-        //         album: "It's a Hello World",
-        //         duration: "3:20"
-        //     }
-        // ]
+        let samplePlaylist = [
+            {
+                title: "Hello World",
+                artist:  "John Doe",
+                album: "It's a Hello World",
+                duration: "3:20"
+            },
+            {
+                title: "Hello Me",
+                artist:  "John Doe",
+                album: "It's a Hello World",
+                duration: "3:20"
+            }
+        ]
 
-        // setPlaylist(samplePlaylist)
+        setPlaylist(samplePlaylist)
     }, [])
 
     const handleAddClick = () => {
@@ -34,7 +34,7 @@ const Playlist = (props) => {
     return(
         <div className="playlist">
             <div className="playlist-title">
-                <h1 id="squad-playlist-title" contentEditable="true" style={{ marginRight: 10 }}>Squad Playlist</h1>
+                <h1 id="squad-playlist-title" contentEditable="true" style={{ marginRight: 10, fontSize: 36 }}>Squad Playlist</h1>
                 <FontAwesomeIcon className="edit" icon={faPen} />
             </div>
             <div className="playlist-list">
@@ -63,4 +63,4 @@ const Playlist = (props) => {
     )
 }
 
-export default Playlist
+export default List
