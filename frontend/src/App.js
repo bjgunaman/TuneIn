@@ -26,7 +26,7 @@ function App() {
       </Switch>
       <Redirect
         to={{
-          pathname: "/playlist"
+          pathname: "/login"
         }}
       />
     </Router>

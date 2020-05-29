@@ -51,16 +51,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(express.static(path.join(__dirname, '../frontend/build')));
+app.use(express.static('../frontend/src/pages/*'));
 
-// Commented this bit out because it wouldn't go to the auth page
-// Handles any requests that don't match the ones above
-// app.get('*', (req,res) =>{
-//     res.sendFile(path.join(__dirname+'/../frontend/build/index.html'));
-// });
-
-app.get('../frontend/src/pages/*', requireUser, requireLogin, express.static('.'));
-
-app.get('/auth/spotify', passport.authenticate('spotify'));
+app.get('/auth/spotify', passport.authenticate('spotify', {
+  scope: ['user-read-private'],
+  showDialog: true
+}),
+function(req, res) {}
+);
 
 app.get('/auth/spotify/callback',
   passport.authenticate('spotify',
@@ -71,22 +69,16 @@ app.get('/auth/spotify/callback',
 app.get('/setcookie', requireUser,
   function(req, res) {
     res.cookie('songs-with-friends', new Date());
-    res.redirect('/');
+    console.log("yuh")
+    res.redirect('../frontend/src/pages/Playlist.js');
   }
 );
 
-// app.get('/login', function(req, res) {
-//   res.render('../frontend/src/pages/Login.js', { user: req.user });
-// });
-
-// Don't think we need this...
-// app.get('/auth/spotify/callback', 
-//   passport.authenticate('spotify'),
-//   function(req, res) {
-//     res.redirect('/');
-//   }
-// );
-
+// Commented this bit out because it wouldn't go to the auth page
+// Handles any requests that don't match the ones above
+app.get('*', (req,res) =>{
+    res.sendFile(path.join(__dirname+'/../frontend/build/index.html'));
+});
 
 // Don't need this yet
 // app.get('/auth/logout', (req, res) => {
