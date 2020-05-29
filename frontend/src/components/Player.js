@@ -28,7 +28,7 @@ const Player = (props) => {
                 <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{title}</p>
                 <p style={{ marginLeft: "0.5rem" }}>{artist}</p>
                 <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
-                <p style={{ marginLeft: "0.5rem" }}>{title}</p>
+                <p style={{ marginLeft: "0.5rem" }}>{album}</p>
             </div>
             <div className="lower">
                 <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />

@@ -10,7 +10,7 @@ const Login = () => {
                 <h1 className="title">TuneIn (a Songs with Friends project)</h1>
             </div>
             <div className="row">
-                <button className="login">LOGIN TO SPOTIFY</button>
+                <button className="login">CONNECT TO SPOTIFY</button>
             </div>
         </div>
     )
