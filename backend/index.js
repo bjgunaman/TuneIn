@@ -28,6 +28,7 @@ passport.use(
 	},
 	function(accessToken, refreshToken, expires_in, profile, done) {
 		process.nextTick(function() {
+      console.log("Got profile: ", profile);
       return done(null, profile);
     });
   })
@@ -57,13 +58,13 @@ app.get('/auth/spotify', passport.authenticate('spotify', {
   scope: ['user-read-private'],
   showDialog: true
 }),
-function(req, res) {}
+  function(req, res) {}
 );
 
 app.get('/auth/spotify/callback',
   passport.authenticate('spotify',
     { successRedirect: '/setcookie', failureRedirect: '/' }
-  )
+  ),
 );
 
 app.get('/setcookie', requireUser,
