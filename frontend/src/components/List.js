@@ -10,22 +10,22 @@ const List = (props) => {
     const[playlist, setPlaylist] = useState([])
 
     useEffect(() => {
-        let samplePlaylist = [
-            {
-                title: "Hello World",
-                artist:  "John Doe",
-                album: "It's a Hello World",
-                duration: "3:20"
-            },
-            {
-                title: "Hello Me",
-                artist:  "John Doe",
-                album: "It's a Hello World",
-                duration: "3:20"
-            }
-        ]
+        // let samplePlaylist = [
+        //     {
+        //         title: "Hello World",
+        //         artist:  "John Doe",
+        //         album: "It's a Hello World",
+        //         duration: "3:20"
+        //     },
+        //     {
+        //         title: "Hello Me",
+        //         artist:  "John Doe",
+        //         album: "It's a Hello World",
+        //         duration: "3:20"
+        //     }
+        // ]
 
-        setPlaylist(samplePlaylist)
+        // setPlaylist(samplePlaylist)
     }, [])
 
     const handleAddClick = () => {
