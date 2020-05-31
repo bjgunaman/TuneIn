@@ -6,6 +6,7 @@ const SpotifyStrategy = require('passport-spotify').Strategy;
 
 const cookieParser = require('cookie-parser');
 const expressSession = require('express-session');
+const cors = require('cors');
 const path = require('path');
 
 var appKey = '7f6407d2ff194a87a5236a464044ec4e';
@@ -36,6 +37,26 @@ passport.use(
 
 const app = express();
 console.log("set up pipeline");
+
+// // Add headers
+// app.use(function (req, res, next) {
+
+//   // Website you wish to allow to connect
+//   res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8000');
+
+//   // Request methods you wish to allow
+//   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+//   // Request headers you wish to allow
+//   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+//   // Set to true if you need the website to include cookies in the requests sent
+//   // to the API (e.g. in case you use sessions)
+//   res.setHeader('Access-Control-Allow-Credentials', true);
+
+//   // Pass to next layer of middleware
+//   next();
+// });
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -71,7 +92,7 @@ app.get('/setcookie', requireUser,
   function(req, res) {
     res.cookie('songs-with-friends', new Date());
     console.log("yuh")
-    res.redirect('../frontend/src/pages/Playlist.js');
+    res.redirect('/')
   }
 );
 
