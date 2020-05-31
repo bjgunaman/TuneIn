@@ -43,7 +43,6 @@ passport.use(
   })
 );
 
-const app = express();
 console.log("set up pipeline");
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -80,7 +79,9 @@ app.get('/setcookie', requireUser,
   function(req, res) {
     res.cookie('songs-with-friends', new Date());
     console.log("yuh")
-    res.redirect('../frontend/src/pages/Playlist.js');
+    console.log("user profile");
+    console.log(req.user);
+    res.redirect('/playlist');
   }
 );
 
