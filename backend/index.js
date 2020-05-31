@@ -1,4 +1,7 @@
+const BASE_SPOTIFY_URL = 'https://api.spotify.com/v1'
+
 const express =  require('express');
+const request = require('request')
 const bodyParser = require('body-parser');
 
 const passport = require("passport");
@@ -6,6 +9,7 @@ const SpotifyStrategy = require('passport-spotify').Strategy;
 
 const cookieParser = require('cookie-parser');
 const expressSession = require('express-session');
+const cors = require('cors');
 const path = require('path');
 const socketio = require('socket.io');
 const app = express()
@@ -19,6 +23,8 @@ let userMap = new Map();
 
 var appKey = '7f6407d2ff194a87a5236a464044ec4e';
 var appSecret = '040e7b594df34f578a39875342e941bf';
+var ACCESS_TOKEN = null
+var MASTER_PROFILE = null
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
@@ -37,7 +43,15 @@ passport.use(
 	},
 	function(accessToken, refreshToken, expires_in, profile, done) {
 		process.nextTick(function() {
-      console.log("Got profile: ", profile);
+      // console.log("Got profile: ", profile);
+      if(!ACCESS_TOKEN) {
+        ACCESS_TOKEN = accessToken
+      }
+
+      if(!MASTER_PROFILE) {
+        MASTER_PROFILE = profile
+      }
+
       return done(null, profile);
     });
   })
@@ -63,7 +77,7 @@ app.use(express.static(path.join(__dirname, '../frontend/build')));
 app.use(express.static('../frontend/src/pages/*'));
 
 app.get('/auth/spotify', passport.authenticate('spotify', {
-  scope: ['user-read-private'],
+  scope: 'user-read-private playlist-modify playlist-modify-public playlist-modify-private playlist-read-collaborative user-read-email streaming user-modify-playback-state user-read-currently-playing user-read-playback-state user-read-playback-position',
   showDialog: true
 }),
   function(req, res) {}
@@ -79,9 +93,8 @@ app.get('/setcookie', requireUser,
   function(req, res) {
     res.cookie('songs-with-friends', new Date());
     console.log("yuh")
-    console.log("user profile");
-    console.log(req.user);
-    res.redirect('/playlist');
+    console.log(ACCESS_TOKEN)
+    res.redirect('/')
   }
 );
 
@@ -90,6 +103,42 @@ app.get('/setcookie', requireUser,
 app.get('*', (req,res) =>{
     res.sendFile(path.join(__dirname+'/../frontend/build/index.html'));
 });
+
+// ENDPOINTS
+app.get('/fetchPlaylist', (req, res) => {
+
+})
+
+app.post('/createPlaylist', (req, res) => {
+  console.log("Master profile: ", MASTER_PROFILE)
+
+  let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
+  let data = {
+    name: "Squad Playlist",
+    public: false,
+    collaborative: true,
+    description: ""
+  }
+
+  console.log(JSON.stringify(data))
+
+  let playlistOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true,
+    body: data
+  }
+
+  request.post(playlistOptions, (error, response, body) => {
+    console.log(response)
+    if(!error && response.statusCode == 200) {
+      console.log("Successfully created playlist")
+      console.log("Body: ", body)
+    } else {
+      console.log("Error Auth")
+    }
+  })
+})
 
 // Don't need this yet
 // app.get('/auth/logout', (req, res) => {

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 
+// APIs
+import { createCollaborativePlaylist } from '../services/PlaylistAPI'
+
 // Styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons'
@@ -16,9 +19,11 @@ const Player = (props) => {
     })
 
     useEffect(() => {
-        setTitle('Almost (Sweet Music)')
-        setArtist('Hozier')
-        setAlbum('Wastland, Baby!')
+        createCollaborativePlaylist()
+        
+        // setTitle('Almost (Sweet Music)')
+        // setArtist('Hozier')
+        // setAlbum('Wastland, Baby!')
     }, [])
 
     return(

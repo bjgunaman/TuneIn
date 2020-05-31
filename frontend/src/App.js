@@ -1,11 +1,10 @@
-import React from 'react';
 import logo from './logo.svg';
 import Chatbox from './components/Chatbox'
+import React, { useState } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link,
   Redirect
 } from "react-router-dom";
 
@@ -16,6 +15,8 @@ import Playlist from './pages/Playlist'
 import './App.css';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
   return (
     <Router>
       <Switch>
@@ -26,11 +27,19 @@ function App() {
           <Playlist />
         </Route>
       </Switch>
-      <Redirect
-        to={{
-          pathname: "/login"
-        }}
-      />
+      {      
+        isLoggedIn ? 
+        <Redirect
+          to={{
+            pathname: "/playlist"
+          }}
+        /> : 
+        <Redirect
+          to={{
+            pathname: "/login"
+          }}
+        />
+      }
     </Router>
   );
 }
