@@ -15,8 +15,6 @@ import Playlist from './pages/Playlist'
 import './App.css';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
   return (
     <Router>
       <Switch>
@@ -26,20 +24,12 @@ function App() {
         <Route path="/playlist">
           <Playlist />
         </Route>
-      </Switch>
-      {      
-        isLoggedIn ? 
+      </Switch> 
         <Redirect
           to={{
             pathname: "/playlist"
           }}
-        /> : 
-        <Redirect
-          to={{
-            pathname: "/login"
-          }}
         />
-      }
     </Router>
   );
 }

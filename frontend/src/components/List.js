@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
 
+// Components
+import Search from './Search'
+
 // Styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPen, faPlus } from '@fortawesome/free-solid-svg-icons'
@@ -8,28 +11,10 @@ import '../styles/List.css'
 
 const List = (props) => {
     const[playlist, setPlaylist] = useState([])
+    const[showPopUp, setShowPopUp] = useState(false)
 
     useEffect(() => {
-        // let samplePlaylist = [
-        //     {
-        //         title: "Hello World",
-        //         artist:  "John Doe",
-        //         album: "It's a Hello World",
-        //         duration: "3:20"
-        //     },
-        //     {
-        //         title: "Hello Me",
-        //         artist:  "John Doe",
-        //         album: "It's a Hello World",
-        //         duration: "3:20"
-        //     }
-        // ]
-
-        // setPlaylist(samplePlaylist)
     }, [])
-
-    const handleAddClick = () => {
-    }
 
     return(
         <div className="playlist">
@@ -57,8 +42,13 @@ const List = (props) => {
                 }
             </div>
             <div>
-                <FontAwesomeIcon onClick={handleAddClick} className="add" icon={faPlus} size="2x"/>
+                <FontAwesomeIcon onClick={() => {setShowPopUp(true)}} className="add" icon={faPlus} size="2x"/>
             </div>
+            {
+                showPopUp ? (
+                    <Search />
+                ) : null
+            }
         </div>
     )
 }

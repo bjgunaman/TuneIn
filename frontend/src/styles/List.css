@@ -62,3 +62,8 @@
 .add:hover {
     opacity: 0.7;
 }
+
+.song-body {
+    display: flex;
+    justify-content: center;
+}
