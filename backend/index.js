@@ -95,20 +95,37 @@ app.get('/setcookie', requireUser,
   function(req, res) {
     res.cookie('songs-with-friends', new Date());
     console.log("yuh")
-    console.log(ACCESS_TOKEN)
+    //console.log(ACCESS_TOKEN)
     res.redirect('/')
   }
 );
 
-app.get('/search', (req,res) => {
-  console.log("search");
-  let uri  = BASE_SPOTIFY_URL + '/search';
+app.get('/searchTrack', (req,res) => {
+  console.log("searchTrack");
+  const userQuery = req.query.query
+  let uri  = BASE_SPOTIFY_URL + '/search?query=' + userQuery + '&type=track';
   let searchOptions = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
     json: true
-    
   }
+  request.get(searchOptions, (error, response, body) => {
+    if(!error && response.statusCode == 200) {
+      console.log(body);
+      const tracksInfo = body.tracks.items.map(item => {
+        return {
+          albumName: item.album.name,
+          artistName: item.artists.map(artist => artist.name),
+          trackId: item.id,
+          trackName: item.name,
+          trackUri: item.uri
+        }
+      })
+      console.log(tracksInfo);
+    } else {
+      console.log("Error Search");
+    }
+  })
 })
 
 app.get('/fetchPlaylist', (req, res) => {
@@ -125,7 +142,7 @@ app.get('/fetchPlaylist', (req, res) => {
     if(!error && response.statusCode == 200) {
       PLAYLISTINFO = body.items.filter(item => item.name === 'Squad Playlist');
       console.log("Successfully Got playlist")
-      console.log(PLAYLISTINFO);
+      //console.log(PLAYLISTINFO);
       
     } else {
       console.log("Error GET")
@@ -158,7 +175,7 @@ app.post('/createPlaylist', (req, res) => {
     if(!error && response.statusCode == 201) {
       PLAYLIST = response.body
       console.log("Successfully created playlist")
-      console.log("Body: ", body)
+      //console.log("Body: ", body)
     } else {
       console.log("Error Auth")
     }
@@ -226,3 +243,5 @@ io.on('connection', (socket) => {
         }
     })
 });
+
+

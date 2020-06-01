@@ -21,13 +21,24 @@ export const fetchCollaborativePlaylist = (data) => {
     fetch('/fetchPlaylist', {
         method: 'GET'
     })
-    .then(response => console.log(response))
+    .then(response => response.json())
     .then(data => {
         console.log(data)
     })
     .catch(error => {
         console.log(error)
     })
+}
+
+export const searchTracks = (query) => {
+    fetch('/searchTrack?query=' + query, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data)
+    })
+    .catch(error => console.log(error))
 }
 
 export const fetchUserData = () => {
