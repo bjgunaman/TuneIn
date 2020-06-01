@@ -21,10 +21,12 @@ const io = socketio(server);
 let userMap = new Map();
 
 
-var appKey = '7f6407d2ff194a87a5236a464044ec4e';
-var appSecret = '040e7b594df34f578a39875342e941bf';
-var ACCESS_TOKEN = null
-var MASTER_PROFILE = null
+let appKey = '7f6407d2ff194a87a5236a464044ec4e';
+let appSecret = '040e7b594df34f578a39875342e941bf';
+let ACCESS_TOKEN = null
+let MASTER_PROFILE = null
+let PLAYLIST = null
+let PLAYLISTINFO = null
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
@@ -98,15 +100,37 @@ app.get('/setcookie', requireUser,
   }
 );
 
-// Commented this bit out because it wouldn't go to the auth page
-// Handles any requests that don't match the ones above
-app.get('*', (req,res) =>{
-    res.sendFile(path.join(__dirname+'/../frontend/build/index.html'));
-});
+app.get('/search', (req,res) => {
+  console.log("search");
+  let uri  = BASE_SPOTIFY_URL + '/search';
+  let searchOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true
+    
+  }
+})
 
-// ENDPOINTS
 app.get('/fetchPlaylist', (req, res) => {
+  console.log("fetching playlist")
+  let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
+  let playlistGetOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true
+  }
 
+  request.get(playlistGetOptions, (error, response, body) => {
+    //console.log(response)
+    if(!error && response.statusCode == 200) {
+      PLAYLISTINFO = body.items.filter(item => item.name === 'Squad Playlist');
+      console.log("Successfully Got playlist")
+      console.log(PLAYLISTINFO);
+      
+    } else {
+      console.log("Error GET")
+    }
+  })
 })
 
 app.post('/createPlaylist', (req, res) => {
@@ -131,7 +155,8 @@ app.post('/createPlaylist', (req, res) => {
 
   request.post(playlistOptions, (error, response, body) => {
     console.log(response)
-    if(!error && response.statusCode == 200) {
+    if(!error && response.statusCode == 201) {
+      PLAYLIST = response.body
       console.log("Successfully created playlist")
       console.log("Body: ", body)
     } else {
@@ -139,6 +164,15 @@ app.post('/createPlaylist', (req, res) => {
     }
   })
 })
+
+// Commented this bit out because it wouldn't go to the auth page
+// Handles any requests that don't match the ones above
+app.get('*', (req,res) =>{
+    res.sendFile(path.join(__dirname+'/../frontend/build/index.html'));
+});
+
+// ENDPOINTS
+
 
 // Don't need this yet
 // app.get('/auth/logout', (req, res) => {

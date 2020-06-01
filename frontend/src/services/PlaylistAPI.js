@@ -11,6 +11,23 @@ export const createCollaborativePlaylist = (data) => {
     .then(data => {
         console.log(data)
     })
+    .catch(error => {
+        console.log(error)
+        fetchCollaborativePlaylist();
+    })
+}
+
+export const fetchCollaborativePlaylist = (data) => {
+    fetch('/fetchPlaylist', {
+        method: 'GET'
+    })
+    .then(response => console.log(response))
+    .then(data => {
+        console.log(data)
+    })
+    .catch(error => {
+        console.log(error)
+    })
 }
 
 export const fetchUserData = () => {
