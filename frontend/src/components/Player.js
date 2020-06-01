@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 // APIs
-import { createCollaborativePlaylist, fetchCollaborativePlaylist } from '../services/PlaylistAPI'
+import { createCollaborativePlaylist, fetchCollaborativePlaylist, searchTracks } from '../services/PlaylistAPI'
 
 // Styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -22,6 +22,8 @@ const Player = (props) => {
         //createCollaborativePlaylist()
         console.log("fetching/.....")
         fetchCollaborativePlaylist();
+        const query = 'lockdown';
+        searchTracks(query)
         // setTitle('Almost (Sweet Music)')
         // setArtist('Hozier')
         // setAlbum('Wastland, Baby!')
