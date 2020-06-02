@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 // APIs
-import { createCollaborativePlaylist, fetchCollaborativePlaylist, searchTracks } from '../services/PlaylistAPI'
+import { createCollaborativePlaylist, fetchCollaborativePlaylist, searchTracks, addItemsToPlaylist,removeItemFromPlaylist } from '../services/PlaylistAPI'
 
 // Styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -18,12 +18,14 @@ const Player = (props) => {
         "total-time": "0:00"
     })
 
-    useEffect(() => {
+    useEffect(async () => {
         //createCollaborativePlaylist()
         console.log("fetching/.....")
-        fetchCollaborativePlaylist();
+        await fetchCollaborativePlaylist();
         const query = 'lockdown';
-        searchTracks(query)
+        //searchTracks(query)
+        //await addItemsToPlaylist();
+        await removeItemFromPlaylist();
         // setTitle('Almost (Sweet Music)')
         // setArtist('Hozier')
         // setAlbum('Wastland, Baby!')
