@@ -31,7 +31,6 @@ export const fetchCollaborativePlaylist = (data) => {
 }
 
 
-
 export const searchTracks = (query) => {
     fetch('/searchTrack?query=' + query, {
         method: 'GET',
@@ -54,9 +53,19 @@ export const play = () => {
     .catch(error => console.log(error))
 }
 
-export const addItemsToPlaylist = (songUri) => {
-    fetch('/addItems?songUri=' + songUri, {
+export const addItemsToPlaylist = (trackUri) => {
+    fetch('/addItems?trackUri=' + trackUri, {
         method: 'POST'
+    })
+    .then(response => response.json())
+    .then( data => {
+        console.log(data)
+    })
+}
+
+export const removeItemFromPlaylist = (trackUri) => {
+    fetch('/removeItems?trackUri=' + trackUri, {
+        method: 'DELETE'
     })
     .then(response => response.json())
     .then( data => {
