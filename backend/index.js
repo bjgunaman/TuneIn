@@ -205,19 +205,48 @@ app.post('/createPlaylist', (req, res) => {
   })
 })
 
+app.delete('/removeItems', (req, res) => {
+  console.log('removing items');
+  let uri  = BASE_SPOTIFY_URL + '/playlists/5eJ54SA1Kz4UbWtgMqKddc/tracks'//uris=spotify:track:5lzZpz0vA73lljqFPpXSXP'
+  console.log(uri)
+  let spotifyUri = 'spotify:track:5IzZpz0vA73IIjqFPpXSXP' //req.query.trackUri
+  let removeItemOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    'Content-type': 'application/json',
+    json: true,
+    body: {
+      tracks: [{
+        uri: spotifyUri,
+        positions: [0]
+      }]
+    }
+  }
+  request.delete(removeItemOptions, (error, response, body) => {
+    console.log(response)
+    if(!error && response.statusCode === 200) {
+      const snapshot_id = body
+      console.log("Successfully removed from playlist")
+      console.log("snapshot_id ", snapshot_id)
+    } else {
+      console.log(error);
+      console.log("Error removing from playlist")
+    }
+  })
+})
 app.post('/addItems', (req, res) => {
   console.log("adding Items");
-  let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST_ID + '/tracks?uris=' + req.query.songUri
+  let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST_ID + '/tracks?uris=' + req.query.trackUri
   console.log(uri);
   let addItemOptions = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
     json: true,
   }
+  olb184hgbej23ut1lm48j85bm
 
   request.post(addItemOptions, (error, response, body) => {
     //console.log(response)
-    console.log(response);
     if(!error && response.statusCode == 201) {
       const snapshot_id = body
       console.log("Successfully added to playlist")
