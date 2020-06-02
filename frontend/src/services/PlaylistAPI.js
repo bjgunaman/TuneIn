@@ -3,43 +3,64 @@ import { BASE_URL } from '../constants/urls'
 import { DEFAULT_ID } from '../constants/id' 
 
 // Creates a collaborative playlist
-export const createCollaborativePlaylist = (data) => {
-    fetch('/createPlaylist', {
+export const createCollaborativePlaylist = () => {
+    return fetch('/createPlaylist', {
         method: 'POST'
     })
     .then(response => response.json())
     .then(data => {
         console.log(data)
+        return data
     })
     .catch(error => {
         console.log(error)
-        fetchCollaborativePlaylist();
     })
 }
 
-export const fetchCollaborativePlaylist = (data) => {
-    fetch('/fetchPlaylist', {
+export const fetchCollaborativePlaylist = () => {
+    return fetch('/fetchPlaylist', {
         method: 'GET'
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data)
+        console.log("Playlist data: ", data)
+
+        if (data.status == 404) {
+            return data.status
+        } else {
+            return data
+        }
     })
     .catch(error => {
         console.log(error)
+        return error
     })
 }
 
+export const fetchTracks = () => {
+    return fetch('/fetchTracks', {
+        method: 'GET'
+    }).then(response => response.json())
+    .then(data => {
+        console.log("Playlist tracks: ", data)
+        
+        return data
+    })
+}
 
 export const searchTracks = (query) => {
-    fetch('/searchTrack?query=' + query, {
+    return fetch('/searchTrack?query=' + query, {
         method: 'GET',
     })
     .then(response => response.json())
     .then(data => {
         console.log(data)
+        return data
     })
-    .catch(error => console.log(error))
+    .catch(error => {
+        console.log(error)
+        return error
+    })
 }
 
 export const play = () => {
@@ -54,12 +75,16 @@ export const play = () => {
 }
 
 export const addItemsToPlaylist = (trackUri) => {
-    fetch('/addItems?trackUri=' + trackUri, {
+    return fetch('/addItems?trackUri=' + trackUri, {
         method: 'POST'
     })
     .then(response => response.json())
     .then( data => {
         console.log(data)
+        return data
+    }).catch(error => {
+        console.log(error)
+        return error
     })
 }
 

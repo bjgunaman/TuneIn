@@ -18,18 +18,13 @@ function App() {
   return (
     <Router>
       <Switch>
-        <Route path="/login">
+        <Route exact path="/">
           <Login />
         </Route>
         <Route path="/playlist">
           <Playlist />
         </Route>
       </Switch> 
-        <Redirect
-          to={{
-            pathname: "/playlist"
-          }}
-        />
     </Router>
   );
 }

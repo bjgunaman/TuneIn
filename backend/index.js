@@ -122,6 +122,8 @@ app.get('/searchTrack', (req,res) => {
           trackUri: item.uri
         }
       })
+
+      res.send(tracksInfo)
       //console.log(tracksInfo);
     } else {
       console.log("Error Search");
@@ -148,8 +150,40 @@ app.put('/play', (req, res) => {
   })
 })
 
+app.get('/fetchTracks', (req, res) => {
+  console.log('Fetching Tracks')
+
+  let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST.id + '/tracks'
+
+  let tracksGetOption = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true
+  }
+
+  request.get(tracksGetOption, (error, response, body) => {
+    if(!error && response.statusCode === 200) {
+      let playlistTracks =  body.items.map(item => {
+        return {
+          albumName: item.track.album.name,
+          artistName: item.track.artists.map(artist => artist.name),
+          trackId: item.track.id,
+          trackName: item.track.name,
+          trackUri: item.track.uri,
+          duration: item.track.duration_ms
+        }
+      })
+
+      res.send(playlistTracks) 
+    } else {
+      console.log("Error GET tracks")
+    }
+  })
+})
+
 app.get('/fetchPlaylist', (req, res) => {
   console.log("fetching playlist")
+
   console.log(MASTER_PROFILE.id)
   let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
   let playlistGetOptions = {
@@ -158,19 +192,36 @@ app.get('/fetchPlaylist', (req, res) => {
     json: true
   }
 
-  request.get(playlistGetOptions, (error, response, body) => {
-    //console.log(response)
-    if(!error && response.statusCode === 200) {
-      PLAYLISTINFO = body.items.filter(item => item.name === 'Squad Playlist');
-      PLAYLIST_ID = PLAYLISTINFO[0].id
-      console.log(PLAYLIST_ID)
-      console.log("Successfully Got playlist")
-      //console.log(PLAYLISTINFO);
-      
-    } else {
-      console.log("Error GET")
-    }
-  })
+  if(PLAYLIST == null) {
+    res.send({
+      status: 404
+    })
+  } else {
+    request.get(playlistGetOptions, (error, response, body) => {
+      //console.log(response)
+      if(!error && response.statusCode === 200) {
+        PLAYLISTINFO = body.items.filter(item => item.id === PLAYLIST_ID);
+        console.log("Playlist Info: ", PLAYLISTINFO)
+        PLAYLIST_ID = PLAYLISTINFO[0].id
+        console.log(PLAYLIST_ID)
+        console.log("Successfully Got playlist")
+        //console.log(PLAYLISTINFO);
+  
+        PLAYLIST = PLAYLISTINFO[0]
+        
+        let playlist = {
+          status: 200,
+          uri: PLAYLIST.uri,
+          name: PLAYLIST.name,
+          id: PLAYLIST.id
+        }
+  
+        res.send(playlist) 
+      } else {
+        console.log("Error GET")
+      }
+    })
+  }
 })
 
 app.post('/createPlaylist', (req, res) => {
@@ -194,11 +245,21 @@ app.post('/createPlaylist', (req, res) => {
   }
 
   request.post(playlistOptions, (error, response, body) => {
-    console.log(response)
+    // console.log(response)
     if(!error && response.statusCode == 201) {
       PLAYLIST = response.body
+      PLAYLIST_ID = PLAYLIST.id
       console.log("Successfully created playlist")
       //console.log("Body: ", body)
+
+      let playlist = {
+        status: 200,
+        uri: PLAYLIST.uri,
+        name: PLAYLIST.name,
+        id: PLAYLIST.id
+      }
+
+      res.send(playlist) 
     } else {
       console.log("Error Auth")
     }
@@ -243,13 +304,13 @@ app.post('/addItems', (req, res) => {
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
     json: true,
   }
-  olb184hgbej23ut1lm48j85bm
 
   request.post(addItemOptions, (error, response, body) => {
     //console.log(response)
     if(!error && response.statusCode == 201) {
       const snapshot_id = body
       console.log("Successfully added to playlist")
+      res.send(snapshot_id)
       //console.log("Body: ", body)
     } else {
       console.log(error);
@@ -320,4 +381,202 @@ io.on('connection', (socket) => {
     })
 });
 
+/**
+ * WITH ALBUM 
+ * We need: track.album.name, track.artists.name, track.name, track.id, track.uri
+ * 
+ * {
+      "added_at": "2020-02-01T03:21:35Z",
+      "added_by": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/nicholassteven998"
+        },
+        "href": "https://api.spotify.com/v1/users/nicholassteven998",
+        "id": "nicholassteven998",
+        "type": "user",
+        "uri": "spotify:user:nicholassteven998"
+      },
+      "is_local": false,
+      "primary_color": null,
+      "track": {
+        "album": {
+          "album_type": "album",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/246dkjvS1zLTtiykXe5h60"
+              },
+              "href": "https://api.spotify.com/v1/artists/246dkjvS1zLTtiykXe5h60",
+              "id": "246dkjvS1zLTtiykXe5h60",
+              "name": "Post Malone",
+              "type": "artist",
+              "uri": "spotify:artist:246dkjvS1zLTtiykXe5h60"
+            }
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/4g1ZRSobMefqF6nelkgibi"
+          },
+          "href": "https://api.spotify.com/v1/albums/4g1ZRSobMefqF6nelkgibi",
+          "id": "4g1ZRSobMefqF6nelkgibi",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/ab67616d0000b2739478c87599550dd73bfa7e02",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ab67616d00001e029478c87599550dd73bfa7e02",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/ab67616d000048519478c87599550dd73bfa7e02",
+              "width": 64
+            }
+          ],
+          "name": "Hollywood's Bleeding",
+          "release_date": "2019-09-06",
+          "release_date_precision": "day",
+          "total_tracks": 17,
+          "type": "album",
+          "uri": "spotify:album:4g1ZRSobMefqF6nelkgibi"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/246dkjvS1zLTtiykXe5h60"
+            },
+            "href": "https://api.spotify.com/v1/artists/246dkjvS1zLTtiykXe5h60",
+            "id": "246dkjvS1zLTtiykXe5h60",
+            "name": "Post Malone",
+            "type": "artist",
+            "uri": "spotify:artist:246dkjvS1zLTtiykXe5h60"
+          }
+        ],
+        "disc_number": 1,
+        "duration_ms": 215280,
+        "episode": false,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "USUM71915699"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/21jGcNKet2qwijlDFuPiPb"
+        },
+        "href": "https://api.spotify.com/v1/tracks/21jGcNKet2qwijlDFuPiPb",
+        "id": "21jGcNKet2qwijlDFuPiPb",
+        "is_local": false,
+        "name": "Circles",
+        "popularity": 93,
+        "preview_url": "https://p.scdn.co/mp3-preview/9cb3c8b7ccb399c2c5346ac424cc59be9fef3c98?cid=774b29d4f13844c495f206cafdad9c86",
+        "track": true,
+        "track_number": 6,
+        "type": "track",
+        "uri": "spotify:track:21jGcNKet2qwijlDFuPiPb"
+      },
+      "video_thumbnail": {
+        "url": null
+      }
+    }
+
+    SINGLE
+    We need: 
+
+    {
+      "added_at": "2020-02-01T03:21:13Z",
+      "added_by": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/nicholassteven998"
+        },
+        "href": "https://api.spotify.com/v1/users/nicholassteven998",
+        "id": "nicholassteven998",
+        "type": "user",
+        "uri": "spotify:user:nicholassteven998"
+      },
+      "is_local": false,
+      "primary_color": null,
+      "track": {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/04gDigrS5kc9YWfZHwBETP"
+              },
+              "href": "https://api.spotify.com/v1/artists/04gDigrS5kc9YWfZHwBETP",
+              "id": "04gDigrS5kc9YWfZHwBETP",
+              "name": "Maroon 5",
+              "type": "artist",
+              "uri": "spotify:artist:04gDigrS5kc9YWfZHwBETP"
+            }
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/3nR9B40hYLKLcR0Eph3Goc"
+          },
+          "href": "https://api.spotify.com/v1/albums/3nR9B40hYLKLcR0Eph3Goc",
+          "id": "3nR9B40hYLKLcR0Eph3Goc",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/ab67616d0000b273b8c0135a218de2d10a8435f5",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ab67616d00001e02b8c0135a218de2d10a8435f5",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/ab67616d00004851b8c0135a218de2d10a8435f5",
+              "width": 64
+            }
+          ],
+          "name": "Memories",
+          "release_date": "2019-09-20",
+          "release_date_precision": "day",
+          "total_tracks": 1,
+          "type": "album",
+          "uri": "spotify:album:3nR9B40hYLKLcR0Eph3Goc"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/04gDigrS5kc9YWfZHwBETP"
+            },
+            "href": "https://api.spotify.com/v1/artists/04gDigrS5kc9YWfZHwBETP",
+            "id": "04gDigrS5kc9YWfZHwBETP",
+            "name": "Maroon 5",
+            "type": "artist",
+            "uri": "spotify:artist:04gDigrS5kc9YWfZHwBETP"
+          }
+        ],
+        "disc_number": 1,
+        "duration_ms": 189486,
+        "episode": false,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "USUM71913350"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/2b8fOow8UzyDFAE27YhOZM"
+        },
+        "href": "https://api.spotify.com/v1/tracks/2b8fOow8UzyDFAE27YhOZM",
+        "id": "2b8fOow8UzyDFAE27YhOZM",
+        "is_local": false,
+        "name": "Memories",
+        "popularity": 91,
+        "preview_url": "https://p.scdn.co/mp3-preview/d7527c763d2a23c25299a886ad161ffaad6294e3?cid=774b29d4f13844c495f206cafdad9c86",
+        "track": true,
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:2b8fOow8UzyDFAE27YhOZM"
+      },
+      "video_thumbnail": {
+        "url": null
+      }
+    }
+ * 
+ */
 
