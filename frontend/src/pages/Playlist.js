@@ -6,7 +6,7 @@ import Player from '../components/Player'
 
 // Styles
 import '../styles/Playlist.css'
-import { fetchCollaborativePlaylist, createCollaborativePlaylist, fetchTracks } from '../services/PlaylistAPI'
+import { fetchCollaborativePlaylist, createCollaborativePlaylist, fetchTracks, play } from '../services/PlaylistAPI'
 
 const Playlist = () => {
     const [playlist, setPlaylist] = useState(null)
@@ -36,6 +36,9 @@ const Playlist = () => {
                 console.log("Playlist after: ", playlist)
             })
         })
+    }
+    const playTrack = () => {
+
     }
 
     return(

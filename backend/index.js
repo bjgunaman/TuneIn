@@ -131,21 +131,57 @@ app.get('/searchTrack', (req,res) => {
   })
 })
 
-app.put('/play', (req, res) => {
-  console.log('play')
-  const playlistUri = PLAYLIST.uri
-  let uri  = BASE_SPOTIFY_URL + '/search?query=' + userQuery + '&type=track';
-  let searchOptions = {
+app.get('/getUserPlaybackState', (req, res) => {
+  console.log("Getting user's playback state")
+  let uri = BASE_SPOTIFY_URL + '/me/player'
+  let getPlaybackOptions = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
-    json: true
+    json: true,
   }
-  request.put(searchOptions, (error, response, body) => {
+  request.get(getPlaybackOptions, (error, response, body) => {
     if(!error && response.statusCode === 200) {
-      const play = body
-      console.log(play)
+      const playbackInfo = body
+      let data = {
+        position_ms: playbackInfo.item.progress_ms,
+        context_uri: playbackInfo.item.context.uri,
+        trackUri: playbackInfo.item.uri,
+        is_playing: playbackInfo.item.is_playing
+      }
+      console.log("DATA FROM USER PLAYBACK", data)
+      res.send(data)
     } else {
       console.log(error)
+      res.send(error)
+    }
+  })
+})
+
+app.put('/playPlaylist', (req, res) => {
+  console.log('playing playlist')
+  const playlistUri = PLAYLIST.uri
+  let uri  = BASE_SPOTIFY_URL + '/me/player/play'
+  let data = {
+    "context_uri": PLAYLIST.uri,
+    offset: {
+      uri: req.trackUri
+    },
+    position_ms: req.position_ms
+  }
+  let playOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true,
+    body: data
+  }
+  request.put(playOptions, (error, response, body) => {
+    if(!error && response.statusCode === 204) {
+      const play = body
+      console.log(play)
+      res.send({})
+    } else {
+      console.log(error)
+      res.send(error)
     }
   })
 })
