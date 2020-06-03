@@ -15,6 +15,8 @@ const socketio = require('socket.io');
 const app = express()
 const http = require('http');
 
+const sql = require("sqlite3").verbose();
+
 const server = http.createServer(app);
 const io = socketio(server);
 
@@ -28,6 +30,36 @@ let MASTER_PROFILE = null
 let PLAYLIST = null
 let PLAYLIST_ID = null
 let PLAYLISTINFO = null
+
+// ================== Building Database ==================
+ 
+const tokensDB = new sql.Database('tokens.db');
+
+// Creation of table
+let cmd = " SELECT name FROM sqlite-master WHERE type='table' AND name='TokenTable' ";
+tokensDB.get(cmd, function(err, val) {
+  console.log(err, val);
+
+  if (val == undefined) {
+    console.log("Creating database");
+    createTokensDB();
+  } else {
+    console.log("Database already exists");
+  }
+});
+
+function createTokensDB() {
+  const cmd = 'CREATE TABLE TokenTable ("rowNum" INTEGER PRIMARY KEY, "accessToken" TEXT)';
+  tokensDB.run(cmd, function(err, val) {
+    if (err) {
+      console.log("Database creation error");
+    } else {
+      console.log("Database created");
+    }
+  });
+}
+
+// ================== End Building Database ================== 
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
