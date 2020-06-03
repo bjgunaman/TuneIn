@@ -3,6 +3,7 @@ const BASE_SPOTIFY_URL = 'https://api.spotify.com/v1'
 const express =  require('express');
 const request = require('request')
 const bodyParser = require('body-parser');
+const querystring = require('querystring');
 
 const passport = require("passport");
 const SpotifyStrategy = require('passport-spotify').Strategy;
@@ -20,7 +21,6 @@ const io = socketio(server);
 
 let userMap = new Map();
 
-
 let appKey = '7f6407d2ff194a87a5236a464044ec4e';
 let appSecret = '040e7b594df34f578a39875342e941bf';
 let ACCESS_TOKEN = null
@@ -28,6 +28,8 @@ let MASTER_PROFILE = null
 let PLAYLIST = null
 let PLAYLIST_ID = null
 let PLAYLISTINFO = null
+let NUM_USERS = 2
+var IS_PLAYING = false
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
@@ -97,7 +99,11 @@ app.get('/setcookie', requireUser,
     res.cookie('songs-with-friends', new Date());
     console.log("yuh")
     //console.log(ACCESS_TOKEN)
-    res.redirect('/')
+
+    res.redirect('/?' + 
+    querystring.stringify({
+      id: req.user.id
+    }))
   }
 );
 
@@ -139,22 +145,37 @@ app.get('/getUserPlaybackState', (req, res) => {
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
     json: true,
   }
-  request.get(getPlaybackOptions, (error, response, body) => {
-    if(!error && response.statusCode === 200) {
-      const playbackInfo = body
-      let data = {
-        position_ms: playbackInfo.item.progress_ms,
-        context_uri: playbackInfo.item.context.uri,
-        trackUri: playbackInfo.item.uri,
-        is_playing: playbackInfo.item.is_playing
+  
+  if(IS_PLAYING == true) {
+    request.get(getPlaybackOptions, (error, response, body) => {
+      if(!error && response.statusCode === 200) {
+        if(!body) {
+          res.send(null)
+        } else {
+          const playbackInfo = body
+          console.log("Playback Info: ", playbackInfo)
+          let data = {
+            playlist_href: playbackInfo.context.href,
+            position_ms: playbackInfo.progress_ms,
+            context_uri: playbackInfo.context.uri,
+            trackUri: playbackInfo.uri,
+            is_playing: playbackInfo.is_playing,
+            status: 200
+          }
+          
+          console.log("DATA FROM USER PLAYBACK", data)
+          res.send(data)
+        }
+      } else {
+        console.log(error)
+        res.send(error)
       }
-      console.log("DATA FROM USER PLAYBACK", data)
-      res.send(data)
-    } else {
-      console.log(error)
-      res.send(error)
-    }
-  })
+    })  
+  } else {
+    res.send({
+      status: 404
+    })
+  }
 })
 
 app.put('/playPlaylist', (req, res) => {
@@ -162,11 +183,11 @@ app.put('/playPlaylist', (req, res) => {
   const playlistUri = PLAYLIST.uri
   let uri  = BASE_SPOTIFY_URL + '/me/player/play'
   let data = {
-    "context_uri": PLAYLIST.uri,
+    context_uri: PLAYLIST.uri,
     offset: {
-      uri: req.trackUri
+      uri: req.query.trackUri
     },
-    position_ms: req.position_ms
+    position_ms: 207700
   }
   let playOptions = {
     url: uri,
@@ -175,9 +196,11 @@ app.put('/playPlaylist', (req, res) => {
     body: data
   }
   request.put(playOptions, (error, response, body) => {
+    console.log("Play response in server: ", response)
     if(!error && response.statusCode === 204) {
       const play = body
       console.log(play)
+      IS_PLAYING = true
       res.send({})
     } else {
       console.log(error)
@@ -258,6 +281,14 @@ app.get('/fetchPlaylist', (req, res) => {
       }
     })
   }
+})
+
+app.get('/fetchNumberofUsers', (req, res) => {
+  console.log("Fetch number of users!")
+
+  res.send({
+    num_user: NUM_USERS
+  })
 })
 
 app.post('/createPlaylist', (req, res) => {

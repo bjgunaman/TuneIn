@@ -9,7 +9,7 @@ const Login = props => {
 
   useEffect(() => {
     if(spotifyCookie) {
-      props.history.replace('/playlist')
+      props.history.replace('/playlist' + window.location.search)
     } else {
       try {
         const cookieValue = document.cookie

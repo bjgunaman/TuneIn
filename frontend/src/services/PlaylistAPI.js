@@ -63,13 +63,14 @@ export const searchTracks = (query) => {
     })
 }
 
-export const play = () => {
-    fetch('/play', {
-        method: 'PUT',
+export const play = uri => {
+    return fetch('/playPlaylist?trackUri=' + uri, {
+        method: 'PUT'
     })
     .then(response => response.json())
     .then(data => {
         console.log(data)
+        return data
     })
     .catch(error => console.log(error))
 }
@@ -89,7 +90,7 @@ export const addItemsToPlaylist = (trackUri) => {
 }
 
 export const removeItemFromPlaylist = (trackUri) => {
-    fetch('/removeItems?trackUri=' + trackUri, {
+    return fetch('/removeItems?trackUri=' + trackUri, {
         method: 'DELETE'
     })
     .then(response => response.json())
@@ -97,6 +98,25 @@ export const removeItemFromPlaylist = (trackUri) => {
         console.log(data)
     })
 }
-export const fetchUserData = () => {
-    
+
+export const fetchUserPlaybackState = () => {
+    return fetch('/getUserPlaybackState', {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Fetch user playback state: ", data)
+        return data
+    })
+}
+
+export const fetchNumberofUsers = () => {
+    return fetch('/fetchNumberofUsers', {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Number of users: ", data)
+        return data
+    })
 }
