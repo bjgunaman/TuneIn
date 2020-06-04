@@ -21,11 +21,11 @@ const Player = (props) => {
     useEffect(async () => {
         //createCollaborativePlaylist()
         console.log("fetching/.....")
-        await fetchCollaborativePlaylist();
+        // await fetchCollaborativePlaylist();
         const query = 'lockdown';
         //searchTracks(query)
         //await addItemsToPlaylist();
-        await removeItemFromPlaylist();
+        // await removeItemFromPlaylist();
         // setTitle('Almost (Sweet Music)')
         // setArtist('Hozier')
         // setAlbum('Wastland, Baby!')

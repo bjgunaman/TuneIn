@@ -67,3 +67,7 @@
     display: flex;
     justify-content: center;
 }
+
+.song-row {
+    border-bottom: 1px solid black;
+}

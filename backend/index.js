@@ -3,6 +3,7 @@ const BASE_SPOTIFY_URL = 'https://api.spotify.com/v1'
 const express =  require('express');
 const request = require('request')
 const bodyParser = require('body-parser');
+const querystring = require('querystring');
 
 const passport = require("passport");
 const SpotifyStrategy = require('passport-spotify').Strategy;
@@ -22,7 +23,6 @@ const io = socketio(server);
 
 let userMap = new Map();
 
-
 let appKey = '7f6407d2ff194a87a5236a464044ec4e';
 let appSecret = '040e7b594df34f578a39875342e941bf';
 let ACCESS_TOKEN = null
@@ -30,6 +30,8 @@ let MASTER_PROFILE = null
 let PLAYLIST = null
 let PLAYLIST_ID = null
 let PLAYLISTINFO = null
+let NUM_USERS = 2
+var IS_PLAYING = false
 
 // ================== Building Database ==================
 
@@ -158,7 +160,11 @@ app.get('/setcookie', requireUser,
     res.cookie('songs-with-friends', new Date());
     console.log("yuh")
     //console.log(ACCESS_TOKEN)
-    res.redirect('/')
+
+    res.redirect('/?' + 
+    querystring.stringify({
+      id: req.user.id
+    }))
   }
 );
 
@@ -173,7 +179,7 @@ app.get('/searchTrack', (req,res) => {
   }
   request.get(searchOptions, (error, response, body) => {
     if(!error && response.statusCode == 200) {
-      console.log(body);
+      // console.log(body);
       const tracksInfo = body.tracks.items.map(item => {
         return {
           albumName: item.album.name,
@@ -183,6 +189,8 @@ app.get('/searchTrack', (req,res) => {
           trackUri: item.uri
         }
       })
+
+      res.send(tracksInfo)
       //console.log(tracksInfo);
     } else {
       console.log("Error Search");
@@ -190,28 +198,112 @@ app.get('/searchTrack', (req,res) => {
   })
 })
 
-app.put('/play', (req, res) => {
-  console.log('play')
+app.get('/getUserPlaybackState', (req, res) => {
+  console.log("Getting user's playback state")
+  let uri = BASE_SPOTIFY_URL + '/me/player'
+  let getPlaybackOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true,
+  }
+  
+  if(IS_PLAYING == true) {
+    request.get(getPlaybackOptions, (error, response, body) => {
+      if(!error && response.statusCode === 200) {
+        if(!body) {
+          res.send(null)
+        } else {
+          const playbackInfo = body
+          // console.log("Playback Info: ", playbackInfo)
+          let data = {
+            position_ms: playbackInfo.progress_ms,
+            trackUri: playbackInfo.uri,
+            is_playing: playbackInfo.is_playing,
+            status: 200
+          }
+          
+          // console.log("DATA FROM USER PLAYBACK", data)
+          res.send(data)
+        }
+      } else {
+        console.log(error)
+        res.send(error)
+      }
+    })  
+  } else {
+    res.send({
+      status: 404
+    })
+  }
+})
+
+app.put('/playPlaylist', (req, res) => {
+  console.log('playing playlist')
   const playlistUri = PLAYLIST.uri
-  let uri  = BASE_SPOTIFY_URL + '/search?query=' + userQuery + '&type=track';
-  let searchOptions = {
+  let uri  = BASE_SPOTIFY_URL + '/me/player/play'
+  let data = {
+    uris: [ req.query.trackUri ],
+    // context_uri: PLAYLIST.uri,
+    // offset: {
+    //   uri: req.query.trackUri
+    // },
+    position_ms: 0
+  }
+  let playOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true,
+    body: data
+  }
+  request.put(playOptions, (error, response, body) => {
+    // console.log("Play response in server: ", response)
+    if(!error && response.statusCode === 204) {
+      const play = body
+      console.log(play)
+      IS_PLAYING = true
+      res.send({})
+    } else {
+      console.log(error)
+      res.send(error)
+    }
+  })
+})
+
+app.get('/fetchTracks', (req, res) => {
+  console.log('Fetching Tracks')
+
+  let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST.id + '/tracks'
+
+  let tracksGetOption = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
     json: true
   }
-  request.put(searchOptions, (error, response, body) => {
+
+  request.get(tracksGetOption, (error, response, body) => {
     if(!error && response.statusCode === 200) {
-      const play = body
-      console.log(play)
+      let playlistTracks =  body.items.map(item => {
+        return {
+          albumName: item.track.album.name,
+          artistName: item.track.artists.map(artist => artist.name),
+          trackId: item.track.id,
+          trackName: item.track.name,
+          trackUri: item.track.uri,
+          duration: item.track.duration_ms
+        }
+      })
+
+      res.send(playlistTracks) 
     } else {
-      console.log(error)
+      console.log("Error GET tracks")
     }
   })
 })
 
 app.get('/fetchPlaylist', (req, res) => {
   console.log("fetching playlist")
-  console.log(MASTER_PROFILE.id)
+
+  // console.log(MASTER_PROFILE.id)
   let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
   let playlistGetOptions = {
     url: uri,
@@ -219,24 +311,48 @@ app.get('/fetchPlaylist', (req, res) => {
     json: true
   }
 
-  request.get(playlistGetOptions, (error, response, body) => {
-    //console.log(response)
-    if(!error && response.statusCode === 200) {
-      PLAYLISTINFO = body.items.filter(item => item.name === 'Squad Playlist');
-      // PLAYLIST_ID = PLAYLISTINFO[0].id
-      PLAYLIST_ID = PLAYLISTINFO[0]
-      console.log(PLAYLIST_ID)
-      console.log("Successfully Got playlist")
-      //console.log(PLAYLISTINFO);
-      
-    } else {
-      console.log("Error GET")
-    }
+  if(PLAYLIST == null) {
+    res.send({
+      status: 404
+    })
+  } else {
+    request.get(playlistGetOptions, (error, response, body) => {
+      //console.log(response)
+      if(!error && response.statusCode === 200) {
+        PLAYLISTINFO = body.items.filter(item => item.id === PLAYLIST_ID);
+        // console.log("Playlist Info: ", PLAYLISTINFO)
+        PLAYLIST_ID = PLAYLISTINFO[0].id
+        console.log(PLAYLIST_ID)
+        console.log("Successfully Got playlist")
+        //console.log(PLAYLISTINFO);
+  
+        PLAYLIST = PLAYLISTINFO[0]
+        
+        let playlist = {
+          status: 200,
+          uri: PLAYLIST.uri,
+          name: PLAYLIST.name,
+          id: PLAYLIST.id
+        }
+  
+        res.send(playlist) 
+      } else {
+        console.log("Error GET")
+      }
+    })
+  }
+})
+
+app.get('/fetchNumberofUsers', (req, res) => {
+  console.log("Fetch number of users!")
+
+  res.send({
+    num_user: NUM_USERS
   })
 })
 
 app.post('/createPlaylist', (req, res) => {
-  console.log("Master profile: ", MASTER_PROFILE)
+  // console.log("Master profile: ", MASTER_PROFILE)
 
   let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
   let data = {
@@ -256,11 +372,21 @@ app.post('/createPlaylist', (req, res) => {
   }
 
   request.post(playlistOptions, (error, response, body) => {
-    console.log(response)
+    // console.log(response)
     if(!error && response.statusCode == 201) {
       PLAYLIST = response.body
+      PLAYLIST_ID = PLAYLIST.id
       console.log("Successfully created playlist")
       //console.log("Body: ", body)
+
+      let playlist = {
+        status: 200,
+        uri: PLAYLIST.uri,
+        name: PLAYLIST.name,
+        id: PLAYLIST.id
+      }
+
+      res.send(playlist) 
     } else {
       console.log("Error Auth")
     }
@@ -269,9 +395,9 @@ app.post('/createPlaylist', (req, res) => {
 
 app.delete('/removeItems', (req, res) => {
   console.log('removing items');
-  let uri  = BASE_SPOTIFY_URL + '/playlists/5eJ54SA1Kz4UbWtgMqKddc/tracks'//uris=spotify:track:5lzZpz0vA73lljqFPpXSXP'
+  let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST_ID + '/tracks'//uris=spotify:track:5lzZpz0vA73lljqFPpXSXP'
   console.log(uri)
-  let spotifyUri = 'spotify:track:5IzZpz0vA73IIjqFPpXSXP' //req.query.trackUri
+  let spotifyUri = req.query.trackUri
   let removeItemOptions = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
@@ -285,7 +411,7 @@ app.delete('/removeItems', (req, res) => {
     }
   }
   request.delete(removeItemOptions, (error, response, body) => {
-    console.log(response)
+    // console.log(response)
     if(!error && response.statusCode === 200) {
       const snapshot_id = body
       console.log("Successfully removed from playlist")
@@ -305,18 +431,58 @@ app.post('/addItems', (req, res) => {
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
     json: true,
   }
-  olb184hgbej23ut1lm48j85bm
 
   request.post(addItemOptions, (error, response, body) => {
     //console.log(response)
     if(!error && response.statusCode == 201) {
       const snapshot_id = body
       console.log("Successfully added to playlist")
+      res.send(snapshot_id)
       //console.log("Body: ", body)
     } else {
       console.log(error);
       console.log("Error add to playlist")
     }
+  })
+})
+
+app.post('/addToQueue', (req, res) => {
+  console.log("Adding to queue in server")
+  console.log("Track URI: ", req.query.trackUri)
+  let uri = BASE_SPOTIFY_URL + '/me/player/queue?uri=' + req.query.trackUri
+
+  let addToQueueOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true,
+  }
+
+  request.post(addToQueueOptions, (error, response, body) => {
+    console.log("Successfully added to queue")
+    console.log("Response of add to queue: ", response)
+
+    if(!error && response.statusCode == 204) {
+      console.log("Successfully added to queue 2")
+
+      res.send({
+        statusCode: response.statusCode
+      })
+    } else {
+      console.log(error);
+      console.log("Error add to queue")
+    }
+  }) 
+})
+
+app.get('/fetchAccessToken', (req, res) => {
+  res.send({
+    access_token: ACCESS_TOKEN
+  })
+})
+
+app.get('/fetchPlaylistUri', (req, res) => {
+  res.send({
+    playlist_uri: PLAYLIST.uri
   })
 })
 
@@ -382,4 +548,202 @@ io.on('connection', (socket) => {
     })
 });
 
+/**
+ * WITH ALBUM 
+ * We need: track.album.name, track.artists.name, track.name, track.id, track.uri
+ * 
+ * {
+      "added_at": "2020-02-01T03:21:35Z",
+      "added_by": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/nicholassteven998"
+        },
+        "href": "https://api.spotify.com/v1/users/nicholassteven998",
+        "id": "nicholassteven998",
+        "type": "user",
+        "uri": "spotify:user:nicholassteven998"
+      },
+      "is_local": false,
+      "primary_color": null,
+      "track": {
+        "album": {
+          "album_type": "album",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/246dkjvS1zLTtiykXe5h60"
+              },
+              "href": "https://api.spotify.com/v1/artists/246dkjvS1zLTtiykXe5h60",
+              "id": "246dkjvS1zLTtiykXe5h60",
+              "name": "Post Malone",
+              "type": "artist",
+              "uri": "spotify:artist:246dkjvS1zLTtiykXe5h60"
+            }
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/4g1ZRSobMefqF6nelkgibi"
+          },
+          "href": "https://api.spotify.com/v1/albums/4g1ZRSobMefqF6nelkgibi",
+          "id": "4g1ZRSobMefqF6nelkgibi",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/ab67616d0000b2739478c87599550dd73bfa7e02",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ab67616d00001e029478c87599550dd73bfa7e02",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/ab67616d000048519478c87599550dd73bfa7e02",
+              "width": 64
+            }
+          ],
+          "name": "Hollywood's Bleeding",
+          "release_date": "2019-09-06",
+          "release_date_precision": "day",
+          "total_tracks": 17,
+          "type": "album",
+          "uri": "spotify:album:4g1ZRSobMefqF6nelkgibi"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/246dkjvS1zLTtiykXe5h60"
+            },
+            "href": "https://api.spotify.com/v1/artists/246dkjvS1zLTtiykXe5h60",
+            "id": "246dkjvS1zLTtiykXe5h60",
+            "name": "Post Malone",
+            "type": "artist",
+            "uri": "spotify:artist:246dkjvS1zLTtiykXe5h60"
+          }
+        ],
+        "disc_number": 1,
+        "duration_ms": 215280,
+        "episode": false,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "USUM71915699"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/21jGcNKet2qwijlDFuPiPb"
+        },
+        "href": "https://api.spotify.com/v1/tracks/21jGcNKet2qwijlDFuPiPb",
+        "id": "21jGcNKet2qwijlDFuPiPb",
+        "is_local": false,
+        "name": "Circles",
+        "popularity": 93,
+        "preview_url": "https://p.scdn.co/mp3-preview/9cb3c8b7ccb399c2c5346ac424cc59be9fef3c98?cid=774b29d4f13844c495f206cafdad9c86",
+        "track": true,
+        "track_number": 6,
+        "type": "track",
+        "uri": "spotify:track:21jGcNKet2qwijlDFuPiPb"
+      },
+      "video_thumbnail": {
+        "url": null
+      }
+    }
+
+    SINGLE
+    We need: 
+
+    {
+      "added_at": "2020-02-01T03:21:13Z",
+      "added_by": {
+        "external_urls": {
+          "spotify": "https://open.spotify.com/user/nicholassteven998"
+        },
+        "href": "https://api.spotify.com/v1/users/nicholassteven998",
+        "id": "nicholassteven998",
+        "type": "user",
+        "uri": "spotify:user:nicholassteven998"
+      },
+      "is_local": false,
+      "primary_color": null,
+      "track": {
+        "album": {
+          "album_type": "single",
+          "artists": [
+            {
+              "external_urls": {
+                "spotify": "https://open.spotify.com/artist/04gDigrS5kc9YWfZHwBETP"
+              },
+              "href": "https://api.spotify.com/v1/artists/04gDigrS5kc9YWfZHwBETP",
+              "id": "04gDigrS5kc9YWfZHwBETP",
+              "name": "Maroon 5",
+              "type": "artist",
+              "uri": "spotify:artist:04gDigrS5kc9YWfZHwBETP"
+            }
+          ],
+          "external_urls": {
+            "spotify": "https://open.spotify.com/album/3nR9B40hYLKLcR0Eph3Goc"
+          },
+          "href": "https://api.spotify.com/v1/albums/3nR9B40hYLKLcR0Eph3Goc",
+          "id": "3nR9B40hYLKLcR0Eph3Goc",
+          "images": [
+            {
+              "height": 640,
+              "url": "https://i.scdn.co/image/ab67616d0000b273b8c0135a218de2d10a8435f5",
+              "width": 640
+            },
+            {
+              "height": 300,
+              "url": "https://i.scdn.co/image/ab67616d00001e02b8c0135a218de2d10a8435f5",
+              "width": 300
+            },
+            {
+              "height": 64,
+              "url": "https://i.scdn.co/image/ab67616d00004851b8c0135a218de2d10a8435f5",
+              "width": 64
+            }
+          ],
+          "name": "Memories",
+          "release_date": "2019-09-20",
+          "release_date_precision": "day",
+          "total_tracks": 1,
+          "type": "album",
+          "uri": "spotify:album:3nR9B40hYLKLcR0Eph3Goc"
+        },
+        "artists": [
+          {
+            "external_urls": {
+              "spotify": "https://open.spotify.com/artist/04gDigrS5kc9YWfZHwBETP"
+            },
+            "href": "https://api.spotify.com/v1/artists/04gDigrS5kc9YWfZHwBETP",
+            "id": "04gDigrS5kc9YWfZHwBETP",
+            "name": "Maroon 5",
+            "type": "artist",
+            "uri": "spotify:artist:04gDigrS5kc9YWfZHwBETP"
+          }
+        ],
+        "disc_number": 1,
+        "duration_ms": 189486,
+        "episode": false,
+        "explicit": false,
+        "external_ids": {
+          "isrc": "USUM71913350"
+        },
+        "external_urls": {
+          "spotify": "https://open.spotify.com/track/2b8fOow8UzyDFAE27YhOZM"
+        },
+        "href": "https://api.spotify.com/v1/tracks/2b8fOow8UzyDFAE27YhOZM",
+        "id": "2b8fOow8UzyDFAE27YhOZM",
+        "is_local": false,
+        "name": "Memories",
+        "popularity": 91,
+        "preview_url": "https://p.scdn.co/mp3-preview/d7527c763d2a23c25299a886ad161ffaad6294e3?cid=774b29d4f13844c495f206cafdad9c86",
+        "track": true,
+        "track_number": 1,
+        "type": "track",
+        "uri": "spotify:track:2b8fOow8UzyDFAE27YhOZM"
+      },
+      "video_thumbnail": {
+        "url": null
+      }
+    }
+ * 
+ */
 
