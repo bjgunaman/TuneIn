@@ -118,7 +118,7 @@ app.get('/searchTrack', (req,res) => {
   }
   request.get(searchOptions, (error, response, body) => {
     if(!error && response.statusCode == 200) {
-      console.log(body);
+      // console.log(body);
       const tracksInfo = body.tracks.items.map(item => {
         return {
           albumName: item.album.name,
@@ -153,17 +153,15 @@ app.get('/getUserPlaybackState', (req, res) => {
           res.send(null)
         } else {
           const playbackInfo = body
-          console.log("Playback Info: ", playbackInfo)
+          // console.log("Playback Info: ", playbackInfo)
           let data = {
-            playlist_href: playbackInfo.context.href,
             position_ms: playbackInfo.progress_ms,
-            context_uri: playbackInfo.context.uri,
             trackUri: playbackInfo.uri,
             is_playing: playbackInfo.is_playing,
             status: 200
           }
           
-          console.log("DATA FROM USER PLAYBACK", data)
+          // console.log("DATA FROM USER PLAYBACK", data)
           res.send(data)
         }
       } else {
@@ -183,11 +181,12 @@ app.put('/playPlaylist', (req, res) => {
   const playlistUri = PLAYLIST.uri
   let uri  = BASE_SPOTIFY_URL + '/me/player/play'
   let data = {
-    context_uri: PLAYLIST.uri,
-    offset: {
-      uri: req.query.trackUri
-    },
-    position_ms: 207700
+    uris: [ req.query.trackUri ],
+    // context_uri: PLAYLIST.uri,
+    // offset: {
+    //   uri: req.query.trackUri
+    // },
+    position_ms: 0
   }
   let playOptions = {
     url: uri,
@@ -196,7 +195,7 @@ app.put('/playPlaylist', (req, res) => {
     body: data
   }
   request.put(playOptions, (error, response, body) => {
-    console.log("Play response in server: ", response)
+    // console.log("Play response in server: ", response)
     if(!error && response.statusCode === 204) {
       const play = body
       console.log(play)
@@ -243,7 +242,7 @@ app.get('/fetchTracks', (req, res) => {
 app.get('/fetchPlaylist', (req, res) => {
   console.log("fetching playlist")
 
-  console.log(MASTER_PROFILE.id)
+  // console.log(MASTER_PROFILE.id)
   let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
   let playlistGetOptions = {
     url: uri,
@@ -260,7 +259,7 @@ app.get('/fetchPlaylist', (req, res) => {
       //console.log(response)
       if(!error && response.statusCode === 200) {
         PLAYLISTINFO = body.items.filter(item => item.id === PLAYLIST_ID);
-        console.log("Playlist Info: ", PLAYLISTINFO)
+        // console.log("Playlist Info: ", PLAYLISTINFO)
         PLAYLIST_ID = PLAYLISTINFO[0].id
         console.log(PLAYLIST_ID)
         console.log("Successfully Got playlist")
@@ -292,7 +291,7 @@ app.get('/fetchNumberofUsers', (req, res) => {
 })
 
 app.post('/createPlaylist', (req, res) => {
-  console.log("Master profile: ", MASTER_PROFILE)
+  // console.log("Master profile: ", MASTER_PROFILE)
 
   let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
   let data = {
@@ -335,9 +334,9 @@ app.post('/createPlaylist', (req, res) => {
 
 app.delete('/removeItems', (req, res) => {
   console.log('removing items');
-  let uri  = BASE_SPOTIFY_URL + '/playlists/5eJ54SA1Kz4UbWtgMqKddc/tracks'//uris=spotify:track:5lzZpz0vA73lljqFPpXSXP'
+  let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST_ID + '/tracks'//uris=spotify:track:5lzZpz0vA73lljqFPpXSXP'
   console.log(uri)
-  let spotifyUri = 'spotify:track:5IzZpz0vA73IIjqFPpXSXP' //req.query.trackUri
+  let spotifyUri = req.query.trackUri
   let removeItemOptions = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
@@ -351,7 +350,7 @@ app.delete('/removeItems', (req, res) => {
     }
   }
   request.delete(removeItemOptions, (error, response, body) => {
-    console.log(response)
+    // console.log(response)
     if(!error && response.statusCode === 200) {
       const snapshot_id = body
       console.log("Successfully removed from playlist")
@@ -383,6 +382,46 @@ app.post('/addItems', (req, res) => {
       console.log(error);
       console.log("Error add to playlist")
     }
+  })
+})
+
+app.post('/addToQueue', (req, res) => {
+  console.log("Adding to queue in server")
+  console.log("Track URI: ", req.query.trackUri)
+  let uri = BASE_SPOTIFY_URL + '/me/player/queue?uri=' + req.query.trackUri
+
+  let addToQueueOptions = {
+    url: uri,
+    headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
+    json: true,
+  }
+
+  request.post(addToQueueOptions, (error, response, body) => {
+    console.log("Successfully added to queue")
+    console.log("Response of add to queue: ", response)
+
+    if(!error && response.statusCode == 204) {
+      console.log("Successfully added to queue 2")
+
+      res.send({
+        statusCode: response.statusCode
+      })
+    } else {
+      console.log(error);
+      console.log("Error add to queue")
+    }
+  }) 
+})
+
+app.get('/fetchAccessToken', (req, res) => {
+  res.send({
+    access_token: ACCESS_TOKEN
+  })
+})
+
+app.get('/fetchPlaylistUri', (req, res) => {
+  res.send({
+    playlist_uri: PLAYLIST.uri
   })
 })
 

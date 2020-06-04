@@ -67,7 +67,10 @@ export const play = uri => {
     return fetch('/playPlaylist?trackUri=' + uri, {
         method: 'PUT'
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log("Play response: ", response)
+        response.json()
+    })
     .then(data => {
         console.log(data)
         return data
@@ -117,6 +120,74 @@ export const fetchNumberofUsers = () => {
     .then(response => response.json())
     .then(data => {
         console.log("Number of users: ", data)
+        return data
+    })
+}
+
+export const removeTracks = (trackUri) => {
+    return fetch('/removeItems?trackUri=' + trackUri, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data
+    })
+}
+
+export const fetchAccessToken = () => {
+    return fetch('/fetchAccessToken', {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data
+    })
+}
+
+export const fetchPlaylistUri = () => {
+    return fetch('/fetchPlaylistUri', {
+        method: 'GET'
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data
+    })
+}
+
+export const playPlayer = ({ 
+    playlist_uri, 
+    trackUri,
+    playerInstance: {
+    _options: {
+        getOAuthToken,
+        id
+    }
+  } }) => {
+    getOAuthToken(access_token => {
+        console.log(access_token)
+        fetch('https://api.spotify.com/v1/me/player/play?device_id=' + id, {
+            method: 'PUT',
+            body: JSON.stringify({ 
+               uri: [trackUri]
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + access_token
+            },
+        })
+        .then(response => {
+            console.log("Player error response: ", response)
+        })
+    })
+    
+}
+
+export const postAddToQueue = (uri) => {
+    return fetch('/addToQueue?trackUri=' + uri, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
         return data
     })
 }

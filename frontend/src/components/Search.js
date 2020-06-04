@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 import '../styles/Search.css'
-import { searchTracks, addItemsToPlaylist } from '../services/PlaylistAPI';
+import { searchTracks, addItemsToPlaylist, postAddToQueue } from '../services/PlaylistAPI';
 
 const Search = props => {
     const [track, setTrack] = useState('')
@@ -23,6 +23,9 @@ const Search = props => {
     const handleAdd = (uri) => {
         addItemsToPlaylist(uri).then(res => {
             console.log("Snapshot id: ", res)
+            postAddToQueue(uri).then(res => {
+                console.log("Add to queue front-end: ", res)
+            })
             props.callback()
             props.handle()
         })
