@@ -32,7 +32,7 @@ let PLAYLIST_ID = null
 let PLAYLISTINFO = null
 
 // ================== Building Database ==================
- 
+
 const tokensDB = new sql.Database('tokens.db');
 
 // Creation of table
@@ -49,10 +49,10 @@ tokensDB.get(cmd, function(err, val) {
 });
 
 function createTokensDB() {
-  const cmd = 'CREATE TABLE TokenTable ("rowNum" INTEGER PRIMARY KEY, "accessToken" TEXT)';
+  const cmd = 'CREATE TABLE TokenTable ("profileID" TEXT PRIMARY KEY UNIQUE, "accessToken" TEXT)';
   tokensDB.run(cmd, function(err, val) {
     if (err) {
-      console.log("Database creation error");
+      console.log("Database creation error", err.message);
     } else {
       console.log("Database created");
     }
@@ -60,6 +60,25 @@ function createTokensDB() {
 }
 
 // ================== End Building Database ================== 
+
+// ================== Storing data in database ==================
+
+function addProfileToDB(profileInfo) {
+  profileID = "'" + profileInfo[1].id + "'";
+  accessToken = "'" + profileInfo[0] + "'";
+  console.log("This is accessToken:", accessToken);
+  console.log("This is profileID:", profileID);
+  cmd = " INSERT INTO TokenTable (profileID, accessToken) VALUES (?,?) ";
+  tokensDB.run(cmd, profileID, accessToken, function(err) {
+    if(err) {
+      console.log("DB insert error", err.message);
+    } else {
+      console.log("It's good, it should be inserted now");
+    }
+  });
+}
+
+// ================== End storing data in database ==================
 
 passport.serializeUser(function(user, done) {
 	done(null, user);
@@ -79,12 +98,22 @@ passport.use(
 	function(accessToken, refreshToken, expires_in, profile, done) {
 		process.nextTick(function() {
       // console.log("Got profile: ", profile);
+      var profileInfo = [];
+
+      // So after the checks I put into array for info that will be used to store them into db
+
       if(!ACCESS_TOKEN) {
-        ACCESS_TOKEN = accessToken
+        ACCESS_TOKEN = accessToken;
+        profileInfo[0] = ACCESS_TOKEN;
       }
 
       if(!MASTER_PROFILE) {
-        MASTER_PROFILE = profile
+        MASTER_PROFILE = profile;
+        profileInfo[1] = MASTER_PROFILE;
+      }
+      
+      if(profileInfo.length == 2) {
+        addProfileToDB(profileInfo);
       }
 
       return done(null, profile);
@@ -194,7 +223,8 @@ app.get('/fetchPlaylist', (req, res) => {
     //console.log(response)
     if(!error && response.statusCode === 200) {
       PLAYLISTINFO = body.items.filter(item => item.name === 'Squad Playlist');
-      PLAYLIST_ID = PLAYLISTINFO[0].id
+      // PLAYLIST_ID = PLAYLISTINFO[0].id
+      PLAYLIST_ID = PLAYLISTINFO[0]
       console.log(PLAYLIST_ID)
       console.log("Successfully Got playlist")
       //console.log(PLAYLISTINFO);
