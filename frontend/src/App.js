@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import Chatbox from './components/Chatbox'
 import React, { useState } from 'react';
 import {
@@ -24,7 +23,8 @@ function App() {
         <Route path="/playlist">
           <Playlist />
         </Route>
-      </Switch> 
+      </Switch>
+      {/* <Redirect to="/playlist" />  */}
     </Router>
   );
 }

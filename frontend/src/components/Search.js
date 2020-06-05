@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faSearch } from '@fortawesome/free-solid-svg-icons'
 
 import '../styles/Search.css'
 import { searchTracks, addItemsToPlaylist, postAddToQueue } from '../services/PlaylistAPI';
 
 const Search = props => {
     const [track, setTrack] = useState('')
-    const [searchResult, setSearchResult] = useState([])
-
+    const [searchResult, setSearchResult] = useState(null)
+    const socket = props.initSocket;
     useEffect(() => {
+        
     }, [])
 
     const handleSearch = () => {
@@ -29,12 +30,13 @@ const Search = props => {
             props.callback()
             props.handle()
         })
+        socket.emit("addItemToPlaylist", { trackUri: uri })
     }
 
     return (
         <div className="popup">
             <div className="popup-inner">
-                <FontAwesomeIcon className="edit" size="2x" icon={faTimes} onClick={props.handle}/>
+                <FontAwesomeIcon className="edit" size="2x" icon={faTimes} onClick={props.handle} style={{ marginTop: "1rem"}}/>
                 <h1 style={{ fontWeight: 600 }}>Add Songs to Queue</h1>
                 <div className="search">
                     <input
@@ -47,7 +49,7 @@ const Search = props => {
                 </div>
                 {
                     searchResult ? (
-                        <table style={{ marginTop: "2rem", overflowY: "scroll", height: "200px", display: "block" }}>
+                        <table style={{ marginTop: "2rem", overflowY: "scroll", height: "240px", display: "block" }}>
                             <thead>
                                 <tr>
                                     <th>Title</th>
@@ -70,7 +72,12 @@ const Search = props => {
                                 }
                             </tbody>
                         </table>
-                    ) : null
+                    ) : (
+                        <div className="empty-search-result">
+                            <FontAwesomeIcon style={{ opacity: 0.6 }} icon={faSearch} size={"6x"}/>
+                            <p style={{ opacity: 0.7 }}>No results to show...yet</p>
+                        </div>
+                    )
                 }
             </div>
         </div>

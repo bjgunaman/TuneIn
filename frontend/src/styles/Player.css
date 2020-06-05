@@ -4,18 +4,24 @@
     --light-grey-2: #535353;
     --dark-grey: #282828;
     --opacity-grey: rgba(255, 255, 255, 0.3);
+    --open-sans-light: 300;
+    --open-sans-regular: 400;
+    --open-sans-semi-bold: 600;
+    --open-sans-bold: 700;
 }
 
 .player {
     width: 100%;
     box-sizing: border-box;
-    background-color: var(--light-grey-2);
+    background-color: var(--dark-grey);
     position: absolute;
     bottom: 0;
     color: white;
     padding: 0 2%;
     padding-bottom: 1%;
-    opacity: 0.7;
+    font-weight: var(--open-sans-semi-bold);
+    font-size: 1.2rem;
+    z-index: 1;
 }
 
 .upper {
@@ -45,8 +51,8 @@
 
 .progress-bar {
     position: relative;
-    height: 8px;
-    width: 350px;
+    height: 0.4rem;
+    width: 40rem;
     border-radius: 50px;
     border: none;
     margin: 0 1rem;
@@ -65,4 +71,18 @@
     margin-left: 3rem;
     align-items: center;
     justify-content: center;
+}
+
+@media(max-width: 500px) {
+    .upper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .player {
+        padding: 0 4rem;
+    }
 }

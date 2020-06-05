@@ -31,14 +31,21 @@ const Login = props => {
         <p>Loading...</p>
       </div>
     ) : (
-      <div>
-          <div>
-              <h1 className="title">TuneIn (a Songs with Friends project)</h1>
+      <div className="login-row">
+          <div className="tops">
+            <p className="top-bar" style={{ display: "flex", flexDirection: "row-reverse" }}>Login</p>
+            <hr style={{ width: "90vw" }}></hr>
           </div>
-          <div className="row">
-            <a href="auth/spotify">
-              <button className="login">CONNECT TO SPOTIFY</button>
-            </a>
+          <div class="main-login">
+            <div>
+                <h1 className="title">Welcome to Songs With Friends</h1>
+                <p className="subtitle">Sit back, relax, and let your friends </p>
+            </div>
+            <div>
+              <a href="auth/spotify">
+                <button className="login">Login With Spotify</button>
+              </a>
+            </div>
           </div>
       </div>
     ) 

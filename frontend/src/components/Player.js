@@ -10,13 +10,21 @@ import { faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons'
 import '../styles/Player.css'
 
 const Player = (props) => {
-    const [title, setTitle] = useState('')
-    const [artist, setArtist] = useState('')
-    const [album, setAlbum] = useState('')
-    const [time, setTime] = useState({ 
-        "elapsed-time": "0:00",
-        "total-time": "0:00"
+    // const [title, setTitle] = useState('')
+    // const [artist, setArtist] = useState('')
+    // const [album, setAlbum] = useState('')
+    // const [time, setTime] = useState({ 
+    //     "elapsed-time": "0:00",
+    //     "total-time": "0:00"
+    // })
+
+    const [isPlaying, setIsPlaying] = useState(false)
+    const [elapsed, setElapsed] = useState(0)
+    const [minutes, setMinutes] = useState({
+        minutes: 0,
+        seconds: 0
     })
+    const [isMobile, setIsMobile] = useState(false)
 
     useEffect(async () => {
         //createCollaborativePlaylist()
@@ -29,29 +37,78 @@ const Player = (props) => {
         // setTitle('Almost (Sweet Music)')
         // setArtist('Hozier')
         // setAlbum('Wastland, Baby!')
+        console.log("Window width: ", props.windowWidth)
+
+        window.addEventListener("resize", checkMobile)
+        
+        setMinutes({
+            minutes: "0",
+            seconds: "00"
+        })
     }, [])
 
+    const checkMobile = () => {
+        if(window.innerWidth <= 500) {
+            setIsMobile(true)
+        } else {
+            setIsMobile(false)
+        }
+    }
+
     return(
-        <div className="player">
-            <div className="upper">
-                <p>Currently Playing: </p>
-                <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{title}</p>
-                <p style={{ marginLeft: "0.5rem" }}>{artist}</p>
-                <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
-                <p style={{ marginLeft: "0.5rem" }}>{album}</p>
-            </div>
-            <div className="lower">
-                <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
-                <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" />
-                <div className="time">
-                    <p>{time["elapsed-time"]}</p>
-                    <div className="progress-bar">
-                        <div className="filler" />
+        isMobile == false ? (
+            <div className="player">
+                <div className="upper">
+                    <p>Currently Playing: </p>
+                    <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{props.trackName}</p>
+                    <p style={{ marginLeft: "0.5rem" }}>{props.artistName}</p>
+                    {
+                        props.trackName ? (
+                            <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
+                        ) : null
+                    }
+                    <p style={{ marginLeft: "0.5rem" }}>{props.albumName}</p>
+                </div>
+                <div className="lower">
+                    <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
+                    <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" />
+                    <div className="time">
+                        {
+                            props.duration ? (
+                                <p>{props.duration}</p>
+                            ) : (  <p>{minutes.minutes}:{minutes.seconds}</p> )
+                        }
+                        <div className="progress-bar">
+                            <div className="filler" />
+                        </div>
+                        {
+                            props.duration ? (
+                                <p>{props.duration}</p>
+                            ) : (  <p>0:00</p> )
+                        }
                     </div>
-                    <p>{time["total-time"]}</p>
                 </div>
             </div>
-        </div>
+        ) : (
+            <div className="player">
+                <div className="upper">
+                    <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
+                    <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{props.trackName}</p>
+                    <p style={{ marginLeft: "0.5rem" }}>{props.artistName}</p>
+                    {
+                        props.trackName ? (
+                            <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
+                        ) : null
+                    }
+                    <p style={{ marginLeft: "0.5rem" }}>{props.albumName}</p>
+                    <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" />
+                </div>
+                <div className="lower">
+                    {/* <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
+                    <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" /> */}
+                </div>
+            </div>
+        )  
     )
 }
 

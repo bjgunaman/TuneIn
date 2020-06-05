@@ -63,13 +63,13 @@ export const searchTracks = (query) => {
     })
 }
 
-export const play = uri => {
-    return fetch('/playPlaylist?trackUri=' + uri, {
+export const play = (uri, user_id) => {
+    return fetch('/playPlaylist?trackUri=' + uri + '&user_id=' + user_id, {
         method: 'PUT'
     })
     .then(response => {
         console.log("Play response: ", response)
-        response.json()
+        return response.json()
     })
     .then(data => {
         console.log(data)
@@ -134,8 +134,8 @@ export const removeTracks = (trackUri) => {
     })
 }
 
-export const fetchAccessToken = () => {
-    return fetch('/fetchAccessToken', {
+export const fetchAccessToken = (user_id) => {
+    return fetch('/fetchAccessToken?user_id=' + user_id, {
         method: 'GET'
     })
     .then(response => response.json())
@@ -182,8 +182,8 @@ export const playPlayer = ({
     
 }
 
-export const postAddToQueue = (uri) => {
-    return fetch('/addToQueue?trackUri=' + uri, {
+export const postAddToQueue = (uri, user_id) => {
+    return fetch('/addToQueue?trackUri=' + uri + '&user_id=' + user_id, {
         method: 'POST'
     })
     .then(response => response.json())

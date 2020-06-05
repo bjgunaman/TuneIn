@@ -30,3 +30,9 @@
     align-items: flex-start;
     justify-content: space-evenly;
 }
+
+.chatbox-position {
+    position: absolute;
+    bottom: 0;
+    right: 10%;
+}

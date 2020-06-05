@@ -17,7 +17,8 @@ class Chatbox extends React.Component {
             messages: []
         }
         console.log("ez clap")
-        socket = io('localhost:8080');
+        socket = props.initSocket;//io('localhost:8080');
+        console.log("socket:",socket);
         this.sendMessage = this.sendMessage.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
     }
@@ -41,7 +42,7 @@ class Chatbox extends React.Component {
     }
 
 
-    componentWillUnmount() {
+    componentDidUnmount() {
         socket.emit('disconnect-user')
         socket.off(); //disconnect
     }
@@ -66,15 +67,15 @@ class Chatbox extends React.Component {
        });
        return (
             <div className="chat-box">
-                <div className="chat-header">
-                    <div id="chat-title">Chat</div>
-                    <div id="close-chat">x</div>
-                </div>
+               <div className="chatbox-header-123">
+                    <div className="chatbox-title-456">Chat</div>
+                    <div className="close-chatbox-213">x</div>
+                </div> 
                 <div className="messages-list">
                     <ScrollToBottom >
                         {listOfMessages}
                     </ScrollToBottom>
-                </div>
+                </div> 
                 <div className="user-input-box">
                     <input
                         className="user-input" 
