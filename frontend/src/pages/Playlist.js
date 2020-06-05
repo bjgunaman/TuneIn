@@ -20,6 +20,7 @@ let player = null
 let previousTrack = ''
 let counter = 0
 let playlistGlobal = null
+let userID = null
 
 const Playlist = () => {
     const [playlist, setPlaylist] = useState(null)
@@ -34,7 +35,6 @@ const Playlist = () => {
 
         var searchParams = new URLSearchParams(window.location.search);
         setUserID(searchParams.get("id"))
-
         checkForPlayer()
 
         fetchCollaborativePlaylist().then(data => {
@@ -234,5 +234,12 @@ const Playlist = () => {
         
     )
 }
+
+function printUserID() {
+  console.log("This is the userID on the frontend:", userID);
+}
+
+// userID is empty even though I made a global variable and it was set
+printUserID();
 
 export default Playlist

@@ -33,6 +33,9 @@ let PLAYLISTINFO = null
 let NUM_USERS = 2
 var IS_PLAYING = false
 
+// This is used to store the profileID (index 1) and the acces token (index 0)
+var profileInfo = [];
+
 // ================== Building Database ==================
 
 const tokensDB = new sql.Database('tokens.db');
@@ -82,6 +85,27 @@ function addProfileToDB(profileInfo) {
 
 // ================== End storing data in database ==================
 
+// ================== Getting data from database ==================
+
+app.get("/getAccessToken", function(req, res, next) {
+  // We need to somehow get the profileID on the frontend of playlistAPI
+  let cmd = "SELECT accesToken FROM PostcardTable WHERE profileID=" + "'" + req.query.id + "'";
+  console.log("cmd to execute: " + cmd);
+  pcardDB.get(cmd, function (err, val) {
+    console.log(err, val);
+    if (val == undefined) {
+      console.log("No row with that id");
+      next();
+    } else {
+      console.log("Row found");
+      console.log(val);
+      res.json(val);
+    }
+  });
+});
+
+// ================== End handle getting data from database ==================
+
 passport.serializeUser(function(user, done) {
 	done(null, user);
 })
@@ -100,7 +124,6 @@ passport.use(
 	function(accessToken, refreshToken, expires_in, profile, done) {
 		process.nextTick(function() {
       // console.log("Got profile: ", profile);
-      var profileInfo = [];
 
       // So after the checks I put into array for info that will be used to store them into db
 
@@ -304,7 +327,9 @@ app.get('/fetchPlaylist', (req, res) => {
   console.log("fetching playlist")
 
   // console.log(MASTER_PROFILE.id)
-  let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
+  // let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
+
+  let uri = BASE_SPOTIFY_URL + '/users/' + profileInfo[1] + '/playlists'  
   let playlistGetOptions = {
     url: uri,
     headers: { 'Authorization': 'Bearer ' + ACCESS_TOKEN },
@@ -354,7 +379,9 @@ app.get('/fetchNumberofUsers', (req, res) => {
 app.post('/createPlaylist', (req, res) => {
   // console.log("Master profile: ", MASTER_PROFILE)
 
-  let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
+  // let uri = BASE_SPOTIFY_URL + '/users/' + MASTER_PROFILE.id + '/playlists'
+  let uri = BASE_SPOTIFY_URL + '/users/' + profileInfo[1] + '/playlists'
+
   let data = {
     name: "Squad Playlist",
     public: false,
