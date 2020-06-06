@@ -56,7 +56,7 @@ const List = (props) => {
         props.playlist ? (
             <div className="playlist">
                 <div className="playlist-title">
-                    <h1 id="squad-playlist-title" contentEditable="true" style={{ marginRight: 10, fontSize: 36 }}>{props.playlist.name}</h1>
+                    <h1 id="squad-playlist-title" contentEditable="true" style={{ marginRight: 10, fontSize: 36 }}>Squad Playlist</h1>
                     <FontAwesomeIcon className="edit" icon={faPen} />
                 </div>
                 <div className="playlist-list">

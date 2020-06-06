@@ -2,8 +2,8 @@ import React from 'react';
 import io from 'socket.io-client';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import Message from './Message';
-//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-//import { fas } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLocationArrow } from '@fortawesome/free-solid-svg-icons';
 import './Chatbox.css';
 let socket;
 class Chatbox extends React.Component {
@@ -15,7 +15,7 @@ class Chatbox extends React.Component {
             username: props.username,
             room: props.room,
             userInput: '',
-            messages: []
+            messages: [],
         }
         console.log("ez clap")
         socket = props.initSocket;//io('localhost:8080');
@@ -27,6 +27,7 @@ class Chatbox extends React.Component {
         // await this.setState({username: this.state.username});
         // await this.setState({room: this.state});
         //console.log(this.state.username);
+
         socket.emit('joining', {username: this.state.username, room: this.state.room});
         //console.log("joining");
         socket.on('serverMessage', (receivedMessage) => {
@@ -57,7 +58,6 @@ class Chatbox extends React.Component {
         }
     }
 
-
     render() {
        const listOfMessages = this.state.messages.map( (message, index) => {
             return (
@@ -70,12 +70,10 @@ class Chatbox extends React.Component {
             <div className="chat-box">
                <div className="chatbox-header-123">
                     <div className="chatbox-title-456">Chat</div>
-                    <div className="close-chatbox-213">x</div>
+                    <div className="close-chatbox-213" onClick={() => {this.props.hideChat()}}>x</div>
                 </div> 
                 <div className="messages-list">
-                    <ScrollToBottom >
-                        {listOfMessages}
-                    </ScrollToBottom>
+                    {listOfMessages}
                 </div> 
                 <div className="user-input-box">
                     <input
@@ -84,7 +82,7 @@ class Chatbox extends React.Component {
                         onKeyPress={(e) => e.key === 'Enter' ? this.sendMessage(e) : null}
                         value={this.state.message} 
                     ></input>
-                    <div id="send-button" onClick={e => this.sendMessage(e)}>send</div>
+                    <FontAwesomeIcon id="send-button" icon={faLocationArrow} size="1x" onClick={e => this.sendMessage(e)} />
                 </div>
             </div>
        );

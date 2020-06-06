@@ -7,6 +7,9 @@ import { createCollaborativePlaylist, fetchCollaborativePlaylist, searchTracks, 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons'
 
+
+import { Progress } from 'react-bulma-components'
+
 import '../styles/Player.css'
 
 let testTrack = {
@@ -15,43 +18,43 @@ let testTrack = {
     albumName: "Test Album 1"
 }
 
+let convertedDuration = 0
+let convertedElapsed = 0
+
 const Player = (props) => {
-    // const [title, setTitle] = useState('')
-    // const [artist, setArtist] = useState('')
-    // const [album, setAlbum] = useState('')
-    // const [time, setTime] = useState({ 
-    //     "elapsed-time": "0:00",
-    //     "total-time": "0:00"
-    // })
-
     const [isPlaying, setIsPlaying] = useState(false)
+    const [playlist, setPlaylist] = useState([])
     const [elapsed, setElapsed] = useState(0)
-    const [minutes, setMinutes] = useState({
-        minutes: 0,
-        seconds: 0
-    })
     const [isMobile, setIsMobile] = useState(false)
+    const [currentTrackName, setCurrentTrackName] = useState('')
+    const [currentArtistName, setCurrentArtistName] = useState('')
+    const [currentAlbumName, setCurrentAlbumName] = useState('')
+    const [currentDuration, setCurrentDuration] = useState('')
 
-    useEffect(async () => {
-        //createCollaborativePlaylist()
+
+    useEffect(() => {
         console.log("fetching/.....")
-        // await fetchCollaborativePlaylist();
-        const query = 'lockdown';
-        //searchTracks(query)
-        //await addItemsToPlaylist();
-        // await removeItemFromPlaylist();
-        // setTitle('Almost (Sweet Music)')
-        // setArtist('Hozier')
-        // setAlbum('Wastland, Baby!')
         console.log("Window width: ", props.windowWidth)
 
         window.addEventListener("resize", checkMobile)
-        
-        setMinutes({
-            minutes: "0",
-            seconds: "00"
-        })
     }, [])
+
+    useEffect(() => {
+        console.log("Playlist updated: ", props.playlist)
+        
+        convertedDuration = convertDuration(props.duration)
+
+        setCurrentAlbumName(props.albumName)
+        setCurrentArtistName(props.artistName)
+        setCurrentDuration(convertedDuration)
+        setCurrentTrackName(props.trackName)
+    }, [props.trackName, props.artistName, props.albumName, props.duration])
+
+    useEffect(() => {
+        console.log("Refreshed")
+        convertedElapsed = convertDuration(props.elapsedTime)
+        setElapsed(convertedElapsed)
+    }, [props.elapsedTime])
 
     const checkMobile = () => {
         if(window.innerWidth <= 1000) {
@@ -61,35 +64,58 @@ const Player = (props) => {
         }
     }
 
+    const convertDuration = (duration) => {
+        let stringSeconds = ''
+        let stringMinutes = ''
+
+        let minutes = Math.floor(duration / (1000 * 60))
+        let seconds = Math.floor((duration / 1000) % 60)
+
+        if(seconds < 10) {
+            stringSeconds = '0' + seconds
+        } else {
+            stringSeconds = seconds.toString()
+        }
+
+        stringMinutes = minutes.toString()
+
+        let res = {
+            minutes: stringMinutes,
+            seconds: stringSeconds
+        }
+
+        console.log("Converted duration: ", res)
+
+        return res   
+    }
+
     return(
         isMobile == false ? (
             <div className="player">
                 <div className="upper">
                     <p>Currently Playing: </p>
-                    <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{props.trackName}</p>
-                    <p style={{ marginLeft: "0.5rem" }}>{props.artistName}</p>
+                    <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{currentTrackName}</p>
+                    <p style={{ marginLeft: "0.5rem", opacity: 0.5 }}>{currentArtistName}</p>
                     {
                         props.trackName ? (
-                            <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
+                            <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem", opacity: 0.5 }}>.</p>
                         ) : null
                     }
-                    <p style={{ marginLeft: "0.5rem" }}>{props.albumName}</p>
+                    <p style={{ opacity: 0.5 }}>{currentAlbumName}</p>
                 </div>
                 <div className="lower">
                     <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
                     <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" />
                     <div className="time">
                         {
-                            props.duration ? (
-                                <p>{props.duration}</p>
-                            ) : (  <p>{minutes.minutes}:{minutes.seconds}</p> )
+                            currentDuration ? (
+                            <p>{elapsed.minutes}:{elapsed.seconds}</p>
+                            ) : (  <p>0:00</p> )
                         }
-                        <div className="progress-bar">
-                            <div className="filler" />
-                        </div>
+                        <Progress className="progress" value={props.elapsedTime} max={props.duration}/>
                         {
-                            props.duration ? (
-                                <p>{props.duration}</p>
+                            currentDuration ? (
+                                <p>{currentDuration.minutes}:{currentDuration.seconds}</p>
                             ) : (  <p>0:00</p> )
                         }
                     </div>
@@ -103,21 +129,30 @@ const Player = (props) => {
                         <div>
                             <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{testTrack.trackName}</p>
                         </div>
-                        <div>
+                        <div className="mobile-upper-2">
                             <p style={{ marginLeft: "0.5rem" }}>{testTrack.artistName}</p>
                             {
                                 testTrack.trackName ? (
                                     <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
                                 ) : null
                             }
-                            <p style={{ marginLeft: "0.5rem" }}>{testTrack.albumName}</p>
+                            <p>{testTrack.albumName}</p>
                         </div>
                     </div>
                     <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" />
                 </div>
                 <div className="lower">
-                    {/* <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
-                    <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" /> */}
+                {
+                        currentDuration ? (
+                            <p>{elapsed.minutes}:{elapsed.seconds}</p>
+                        ) : (  <p>0:00</p> )
+                    }
+                    <Progress className="progress" value={props.elapsedTime} max={props.duration}/>
+                    {
+                        currentDuration ? (
+                            <p>{currentDuration.minutes}:{currentDuration.seconds}</p>
+                        ) : (  <p>0:00</p> )
+                }
                 </div>
             </div>
         )

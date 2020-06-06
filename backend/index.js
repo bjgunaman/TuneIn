@@ -356,7 +356,7 @@ app.get('/fetchUserCurrPlaying', (req, res) => {
       if(response.statusCode == 200) {
         res.send({
           statusCode: response.statusCode,
-          positon_ms: body.progress_ms,
+          position_ms: body.progress_ms,
           uri: body.uri,
           is_playing: body.is_playing
         })

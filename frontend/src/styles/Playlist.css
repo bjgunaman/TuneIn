@@ -36,3 +36,20 @@
     bottom: 0;
     right: 10%;
 }
+
+.mobile-top-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 2rem;
+}
+
+@media(max-width:1000px) {
+    .App {
+        flex-direction: column;
+    }
+
+    .message-bubble {
+        color: white;
+    }
+}
