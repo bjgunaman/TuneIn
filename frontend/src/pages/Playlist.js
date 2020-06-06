@@ -44,9 +44,10 @@ const Playlist = () => {
 
     var searchParams = new URLSearchParams(window.location.search);
     userIDGlobal = searchParams.get("id")
-        if(searchParams.get("host") == true) {
-            isHost = true
-        }
+    if(searchParams.get("host") == 'true') {
+        console.log("HOST SET")
+        isHost = true
+    }
     console.log("userIDGlobal: ",userIDGlobal);
 
     useEffect(() => {
@@ -72,7 +73,7 @@ const Playlist = () => {
             }
             console.log("TESTING3.0")
             if(!numberOfUsersMoreThanTwo) {
-                if(numberOfUser.NUM_USERS >= 1 ) {
+                if(numberOfUser.NUM_USERS >= 2 ) {
                     numberOfUsersMoreThanTwo = true
                 }
             }
@@ -97,7 +98,7 @@ const Playlist = () => {
             }
             console.log("TESTING")
             if(!numberOfUsersMoreThanTwo) {
-                if(numberOfUser.NUM_USERS >= 1 ) {
+                if(numberOfUser.NUM_USERS >= 2 ) {
                     numberOfUsersMoreThanTwo = true
                 }
             }
@@ -113,34 +114,15 @@ const Playlist = () => {
                 
             // })
         })
-        // socket.on("toPlay", (trackUri) => {
-        //     console.log("CHECKING AND PLAYING", trackUri)
-        //     checkAndPlay()
-        // })
-        // socket.on("pleasePlay", play => {
-        //     if(playlistGlobal) {
-        //         console.log("HERE 1.0")
-        //         if(isPlaying == false && playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
-        //             console.log("HERE 2.0")
-        //             play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
-        //                 isPlaying = true
-        //             })
-        //         }
-        //     }
-        // })
+
+        socket.on('pleaseFetch', () => {
+            fetchCallback()
+        })
 
         setInterval(() => {
             fetchUserCurrPlayingTrack().then(data => {
                 console.log("Get current status code: ", data.statusCode)
-                if (data.statusCode == 204) {
-                    removeTracks().then(playlistInfo => {
-                        playlistGlobal = playlistInfo.serverPlaylist
-                        setPlaylist(playlistInfo.serverPlaylist)
-                        play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
-                            isPlaying = true
-                        })
-                    })
-                } else if (data.statusCode == 200 && data.is_playing == false) {
+                if (data.statusCode == 200 && data.is_playing == false) {
                     if(playlistGlobal) {
                         console.log("HERE 1.0")
                         if(playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
@@ -149,12 +131,15 @@ const Playlist = () => {
                                 // isPlaying = true
                                 currentTrackUri = playlistGlobal[0].trackInfo.trackUri;
                                 if (currentTrackUri !== previousTrackUri) {
-                                    removeTracks().then(playlistInfo => {
-                                        previousTrackUri = currentTrackUri
-                                        playlistGlobal = playlistInfo.serverPlaylist
-                                        setPlaylist(playlistInfo.serverPlaylist)
-                                        
-                                    })
+                                    console.log("IS HOST: ", isHost);
+                                    if(isHost) {
+                                        removeTracks().then(playlistInfo => {
+                                            playlistGlobal = playlistInfo.serverPlaylist
+                                            setPlaylist(playlistInfo.serverPlaylist)
+                                            socket.emit('addSongsFetchNew')
+                                        })
+                                    }
+                                    previousTrackUri = currentTrackUri
                                 }
                                 
                             })

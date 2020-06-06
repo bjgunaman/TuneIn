@@ -444,6 +444,9 @@ io.on('connection', (socket) => {
     socket.on('signalPlay', (play) => {
       socket.broadcast.to('100').emit('pleasePlay', play);
     });
+    socket.on('addSongsFetchNew', () => {
+      socket.broadcast.to('100').emit('pleaseFetch');
+    })
     socket.on('disconnect-user', () => {
         const userInfo = userMap.get(socket.id);
         if(userInfo) {

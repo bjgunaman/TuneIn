@@ -25,9 +25,7 @@ const Search = props => {
     const handleAdd = (trackInfo) => {
         addItemsToPlaylist(trackInfo).then(res => {
             console.log("Snapshot id: ", res)
-            // postAddToQueue(uri).then(res => {
-            //     console.log("Add to queue front-end: ", res)
-            // })
+            socket.emit("addSongsFetchNew")
             props.callback()
             props.handle()
         })
