@@ -15,20 +15,35 @@ class Chatbox extends React.Component {
             username: props.username,
             room: props.room,
             userInput: '',
-            messages: []
+            messages: [],
         }
+        this.image = props.image;
+        console.log("IMage in chatbox",props.image);
         console.log("ez clap")
         socket = props.initSocket;//io('localhost:8080');
         console.log("socket:",socket);
         this.sendMessage = this.sendMessage.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
     }
+    
+    
     async componentDidMount() {
-        // await this.setState({username: this.state.username});
-        // await this.setState({room: this.state});
-        //console.log(this.state.username);
         socket.emit('joining', {username: this.state.username, room: this.state.room});
-        //console.log("joining");
+        // if(this.image == '') {
+        //     console.log("CHECKING COLOR")
+        //     const userColor = this.getRandomColor();
+        //     console.log("USER COLOR IN CHATBOC", userColor)
+        //     this.setState({color: userColor})
+        //     socket.emit('checkColor', { userColor });
+        // }
+
+        // socket.on('resendColor', (color) => {
+        //     const userColor = this.getRandomColor();
+        //     console.log("RECOLORING:", userColor);
+        //     this.setState({color: userColor});
+        //     socket.emit('checkColor', { userColor });
+        // } )
+
         socket.on('serverMessage', (receivedMessage) => {
             this.setState({messages: [...this.state.messages, receivedMessage]});
         })
@@ -56,13 +71,14 @@ class Chatbox extends React.Component {
             this.setState({message: ''});
         }
     }
+    
 
 
     render() {
        const listOfMessages = this.state.messages.map( (message, index) => {
             return (
                 <div key={index}>
-                    <Message message={message} username={this.state.username}/>
+                    <Message image={this.image} message={message} username={this.state.username}/>
                 </div>
             );
        });

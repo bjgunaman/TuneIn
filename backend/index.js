@@ -20,6 +20,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 let userMap = new Map();
+let coloursUsed = new Map()
 
 let appKey = '7f6407d2ff194a87a5236a464044ec4e';
 let appSecret = '040e7b594df34f578a39875342e941bf';
@@ -106,19 +107,26 @@ app.get('/setcookie', requireUser,
     NUM_USERS += 1
 
     res.cookie('songs-with-friends', new Date());
-    console.log("yuh")
-    //console.log(ACCESS_TOKEN)
-
+    let images = ''
+    console.log(req.user._json);
+    if (req.user._json.images.length > 0 ) {
+      images = req.user._json.images[0].url
+    }
+    console.log("USER NAME:", req.user._json.display_name);
     if(req.user.id == MASTER_PROFILE.id) {
       res.redirect('/?' + 
       querystring.stringify({
         id: req.user.id,
-        host: true
+        host: true,
+        username: req.user._json.display_name,
+        image: images
       }))
     } else {
       res.redirect('/?' + 
       querystring.stringify({
-        id: req.user.id
+        id: req.user.id,
+        username: req.user._json.display_name,
+        image: images
       }))
     }
   }
@@ -405,6 +413,14 @@ function requireLogin(req, res, next) {
     next();
   }
 };
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
 const port = process.env.PORT || 8000;
 server.listen(8080, () => console.log('listening on port 8080'));
@@ -413,37 +429,41 @@ app.listen(port);
 console.log('App is listening on port ' + port);
 
 io.on('connection', (socket) => {
-    console.log('We have a new connection!!!');
     socket.on('joining', (userInfo) => {
-        userMap.set(socket.id, {username: userInfo.username, room: userInfo.room});
-        //socket.emit('message', {user: 'admin', text: `${user.name}, welcome to this chat room!`});
-        console.log("emitting to room");
+        let color = getRandomColor();
+        while (coloursUsed.get(color)) {
+          color = getRandomColor();
+        }
+        coloursUsed.set(color, true);
+        console.log("COLOURS", color);
+        userMap.set(socket.id, {username: userInfo.username, room: userInfo.room, color});
         socket.broadcast.to(userInfo.room).emit('serverMessage', { username: 'server', textMessage: `${userInfo.username} has joined the channel`});
         socket.broadcast.to(userInfo.room).emit('newUserIncoming', { NUM_USERS });
-        socket.join(userInfo.room);
-        console.log("joining");      
+        
+        socket.join(userInfo.room);    
     });
     socket.on('getNumberOfUsers', () => {
-      console.log("RECEIVE USER REQUEST");
       socket.emit('receiveNumberOfUsers', { NUM_USERS });
     });
     socket.on("addItemToPlaylist", (trackInfo) => {
-      // const userInfo = userMap.get(socket.id);
-      console.log("Socket server track uri: ", trackInfo)
       socket.broadcast.to('100').emit("othersAddItemToQueue", trackInfo);
-      console.log("EMITTING");
       io.to('100').emit("toPlay", trackInfo);
-      console.log("EMITTED")
     })
     socket.on('sendMessage', (message) => {
         const userInfo = userMap.get(socket.id);
-        console.log(message);
-        console.log(userInfo);
-        io.to(userInfo.room).emit('broadcastedMessage', {username: userInfo.username, textMessage: message});
+        io.to(userInfo.room).emit('broadcastedMessage', {username: userInfo.username, textMessage: message, userColor: userInfo.color});
     });
     socket.on('signalPlay', (play) => {
       socket.broadcast.to('100').emit('pleasePlay', play);
     });
+    // socket.on('checkColor', (color) => {
+    //   console.log("COLORHEHRHEHRHEHREHRHRHE", color);
+    //   if(coloursUsed.get(color.userColor)) {
+    //     socket.emit('resendColor', { userColor: color.userColor })
+    //   } else {
+    //     coloursUsed.set(color.userColor, true);
+    //   }
+    // })
     socket.on('disconnect-user', () => {
         const userInfo = userMap.get(socket.id);
         if(userInfo) {

@@ -88,10 +88,16 @@
 
 .with-avatar {
     border-radius: 50%;
-    background-color: blue;
+    /* background-color: blue; */
     height:1.3em;
     width: 1.3em;
 
+}
+
+.profileImage {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 50%;
 }
 
 .user-input {

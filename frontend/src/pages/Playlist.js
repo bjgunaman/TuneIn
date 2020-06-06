@@ -31,6 +31,8 @@ let isHost = false
 let currentTrackUri = '';
 let previousTrackUri = '';
 let position_ms = '';
+let username = '';
+let image = '';
 
 const Playlist = () => {
     const [playlist, setPlaylist] = useState([])
@@ -44,18 +46,16 @@ const Playlist = () => {
 
     var searchParams = new URLSearchParams(window.location.search);
     userIDGlobal = searchParams.get("id")
-        if(searchParams.get("host") == true) {
-            isHost = true
-        }
-    console.log("userIDGlobal: ",userIDGlobal);
+    if(searchParams.get("host") == true) {
+        isHost = true
+    }
+    image = searchParams.get("image");
+    //console.log("IMAGE IN PLAYLIST", image);
+    username = searchParams.get("username");
+    //console.log("userIDGlobal: ",userIDGlobal);
 
     useEffect(() => {
-        console.log("Fetch playlist")
-
         setUserID(searchParams.get("id"))
-        
-        //checkForPlayer()
-
         window.addEventListener("resize", checkMobile)
 
         //fetching playlist from server
@@ -77,17 +77,6 @@ const Playlist = () => {
                 }
             }
             console.log("TESTING 4.0")
-            // if(playlistGlobal) {
-            //     console.log("HERE 3.0")
-            //     if(isPlaying == false && playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
-            //         console.log("HERE 4.0")
-            //         play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
-            //             isPlaying = true
-            //             currentTrackUri = playlistGlobal[0].trackInfo.trackUri
-            //             previousTrackUri = playlistGlobal[0].trackInfo.trackUri
-            //         })
-            //     }
-            // }
         })
         socket.on('newUserIncoming', (numberOfUser) => {
 
@@ -422,7 +411,7 @@ const Playlist = () => {
                     }}>Invite</button>
                 </div>
                 <Player />
-                <Chatbox room={'100'} username={userIDGlobal} initSocket={socket}/>
+                <Chatbox image={image} room={'100'} username={username} initSocket={socket}/>
             </div>
         ) : (
             <div className="App">
