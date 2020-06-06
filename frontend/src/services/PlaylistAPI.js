@@ -77,10 +77,15 @@ export const play = (uri, user_id) => {
     })
     .catch(error => console.log(error))
 }
-
-export const addItemsToPlaylist = (trackUri) => {
-    return fetch('/addItems?trackUri=' + trackUri, {
-        method: 'POST'
+//{albumName: "7 EP", artistName: Array(2), trackName: "Old Town Road - Remix", trackUri: "spotify:track:2YpeDb67231RjR0MgVLzsG"}
+export const addItemsToPlaylist = (trackInfo) => {
+    console.log("trackInfo: ",trackInfo);
+    return fetch('/addItems?trackUri=' + trackInfo.trackUri + '&trackName=' + trackInfo.trackName + '&albumName=' + trackInfo.albumName + '&artistName', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({trackInfo: trackInfo})
     })
     .then(response => response.json())
     .then( data => {
@@ -124,8 +129,8 @@ export const fetchNumberofUsers = () => {
     })
 }
 
-export const removeTracks = (trackUri) => {
-    return fetch('/removeItems?trackUri=' + trackUri, {
+export const removeTracks = () => {
+    return fetch('/removeItems', {
         method: 'DELETE'
     })
     .then(response => response.json())
@@ -186,6 +191,14 @@ export const postAddToQueue = (uri, user_id) => {
     return fetch('/addToQueue?trackUri=' + uri + '&user_id=' + user_id, {
         method: 'POST'
     })
+    .then(response => response.json())
+    .then(data => {
+        return data
+    })
+}
+
+export const fetchUserCurrPlayingTrack = () => {
+    return fetch('/fetchUserCurrPlaying')
     .then(response => response.json())
     .then(data => {
         return data

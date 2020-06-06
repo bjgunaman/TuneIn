@@ -9,10 +9,11 @@ let socket;
 class Chatbox extends React.Component {
 
     constructor(props) {
+        console.log("Current username: ", props.username)
         super(props);
         this.state = {
-            username: '',
-            room: '',
+            username: props.username,
+            room: props.room,
             userInput: '',
             messages: []
         }
@@ -23,8 +24,8 @@ class Chatbox extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
     }
     async componentDidMount() {
-        await this.setState({username: 'Lmao'});
-        await this.setState({room: '100'});
+        // await this.setState({username: this.state.username});
+        // await this.setState({room: this.state});
         //console.log(this.state.username);
         socket.emit('joining', {username: this.state.username, room: this.state.room});
         //console.log("joining");

@@ -9,6 +9,12 @@ import { faVolumeUp, faVolumeMute } from '@fortawesome/free-solid-svg-icons'
 
 import '../styles/Player.css'
 
+let testTrack = {
+    trackName: "Test Track 1",
+    artistName: "Test Artist 1",
+    albumName: "Test Album 1"
+}
+
 const Player = (props) => {
     // const [title, setTitle] = useState('')
     // const [artist, setArtist] = useState('')
@@ -48,7 +54,7 @@ const Player = (props) => {
     }, [])
 
     const checkMobile = () => {
-        if(window.innerWidth <= 500) {
+        if(window.innerWidth <= 1000) {
             setIsMobile(true)
         } else {
             setIsMobile(false)
@@ -93,14 +99,20 @@ const Player = (props) => {
             <div className="player">
                 <div className="upper">
                     <FontAwesomeIcon className="volume-up" icon={faVolumeUp} size="2x" />
-                    <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{props.trackName}</p>
-                    <p style={{ marginLeft: "0.5rem" }}>{props.artistName}</p>
-                    {
-                        props.trackName ? (
-                            <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
-                        ) : null
-                    }
-                    <p style={{ marginLeft: "0.5rem" }}>{props.albumName}</p>
+                    <div className="mobile-upper">
+                        <div>
+                            <p style={{ marginLeft: "3rem", fontWeight: 600, opacity: 1 }}>{testTrack.trackName}</p>
+                        </div>
+                        <div>
+                            <p style={{ marginLeft: "0.5rem" }}>{testTrack.artistName}</p>
+                            {
+                                testTrack.trackName ? (
+                                    <p style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>.</p>
+                                ) : null
+                            }
+                            <p style={{ marginLeft: "0.5rem" }}>{testTrack.albumName}</p>
+                        </div>
+                    </div>
                     <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" />
                 </div>
                 <div className="lower">
@@ -108,7 +120,7 @@ const Player = (props) => {
                     <FontAwesomeIcon className="volume-mute" icon={faVolumeMute} size="2x" /> */}
                 </div>
             </div>
-        )  
+        )
     )
 }
 

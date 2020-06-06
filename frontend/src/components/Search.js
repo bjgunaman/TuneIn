@@ -18,19 +18,20 @@ const Search = props => {
     const handleSearch = () => {
         searchTracks(track).then(res => {
             setSearchResult(res)
+            console.log("RES:", res)
         })
     }
 
-    const handleAdd = (uri) => {
-        addItemsToPlaylist(uri).then(res => {
+    const handleAdd = (trackInfo) => {
+        addItemsToPlaylist(trackInfo).then(res => {
             console.log("Snapshot id: ", res)
-            postAddToQueue(uri).then(res => {
-                console.log("Add to queue front-end: ", res)
-            })
+            // postAddToQueue(uri).then(res => {
+            //     console.log("Add to queue front-end: ", res)
+            // })
             props.callback()
             props.handle()
         })
-        socket.emit("addItemToPlaylist", { trackUri: uri })
+        socket.emit("addItemToPlaylist", { trackInfo: trackInfo })
     }
 
     return (
@@ -59,13 +60,13 @@ const Search = props => {
                             </thead>
                             <tbody>
                                 {
-                                    searchResult.map(({ albumName, artistName, trackName, trackUri }) => {
+                                    searchResult.map(({ albumName, artistName, trackName, trackUri, duration }) => {
                                         return([
                                             <tr className="song-row">
                                                 <td>{trackName}</td>
                                                 <td>{artistName}</td>
                                                 <td>{albumName}</td>
-                                                <button className="add-button" onClick={() => {handleAdd(trackUri)}}>Add</button>
+                                                <button className="add-button" onClick={() => {handleAdd({ albumName, artistName, trackName, trackUri, duration })}}>Add</button>
                                             </tr>
                                         ])
                                     })

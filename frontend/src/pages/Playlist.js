@@ -16,19 +16,24 @@ import { fetchCollaborativePlaylist,
          removeTracks,
          fetchAccessToken,
          playPlayer, 
-         postAddToQueue } from '../services/PlaylistAPI'
+         postAddToQueue,
+         fetchUserCurrPlayingTrack } from '../services/PlaylistAPI'
 import Chatbox from '../components/Chatbox'
 
 let player = null
 let previousTrack = ''
 let counter = 0
-let playlistGlobal = null
+let playlistGlobal = []
 let userIDGlobal = null
 let numberOfUsersMoreThanTwo = false
 let isPlaying = false
+let isHost = false
+let currentTrackUri = '';
+let previousTrackUri = '';
+let position_ms = '';
 
 const Playlist = () => {
-    const [playlist, setPlaylist] = useState(null)
+    const [playlist, setPlaylist] = useState([])
     const [numberOfUsers, setNumberOfUsers] = useState(null)
     const [userID, setUserID] = useState(null)
     const [checkInterval, setCheckInterval] = useState(null)
@@ -37,33 +42,28 @@ const Playlist = () => {
     const [isMobile, setIsMobile] = useState(false)
     const socket = io('localhost:8080');
 
+    var searchParams = new URLSearchParams(window.location.search);
+    userIDGlobal = searchParams.get("id")
+        if(searchParams.get("host") == true) {
+            isHost = true
+        }
+    console.log("userIDGlobal: ",userIDGlobal);
+
     useEffect(() => {
         console.log("Fetch playlist")
 
-        var searchParams = new URLSearchParams(window.location.search);
         setUserID(searchParams.get("id"))
-        userIDGlobal = searchParams.get("id")
-
-        checkForPlayer()
+        
+        //checkForPlayer()
 
         window.addEventListener("resize", checkMobile)
 
+        //fetching playlist from server
         fetchCollaborativePlaylist().then(data => {
-            if (data == 404) {
-                createCollaborativePlaylist().then(res => {
-                    console.log("Create: ", res)
-                    res.tracks = []
-                    setPlaylist(res)
-                    playlistGlobal = res
-                })
-            } else {
-                console.log("Playlist data in front: ", data)
-                setPlaylist(data)
-                playlistGlobal = data
-            }  
+            setPlaylist(data.serverPlaylist);
+            playlistGlobal = data.serverPlaylist;
         })
-
-        // setInterval(checkNumberUser, 100)
+        
         socket.emit('getNumberOfUsers')
         socket.on('receiveNumberOfUsers', (numberOfUser) => {
             console.log("CURRENTNUMBEROFUSER2.0:", numberOfUser.NUM_USERS)
@@ -72,20 +72,22 @@ const Playlist = () => {
             }
             console.log("TESTING3.0")
             if(!numberOfUsersMoreThanTwo) {
-                if(numberOfUser.NUM_USERS >= 2 ) {
+                if(numberOfUser.NUM_USERS >= 1 ) {
                     numberOfUsersMoreThanTwo = true
                 }
             }
             console.log("TESTING 4.0")
-            if(playlistGlobal) {
-                console.log("HERE 3.0")
-                if(isPlaying == false && playlistGlobal.tracks.length > 0 && numberOfUsersMoreThanTwo == true) {
-                    console.log("HERE 4.0")
-                    play(playlistGlobal.tracks[0].uri, userIDGlobal).then(res => {
-                        isPlaying = true
-                    })
-                }
-            }
+            // if(playlistGlobal) {
+            //     console.log("HERE 3.0")
+            //     if(isPlaying == false && playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
+            //         console.log("HERE 4.0")
+            //         play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
+            //             isPlaying = true
+            //             currentTrackUri = playlistGlobal[0].trackInfo.trackUri
+            //             previousTrackUri = playlistGlobal[0].trackInfo.trackUri
+            //         })
+            //     }
+            // }
         })
         socket.on('newUserIncoming', (numberOfUser) => {
 
@@ -95,69 +97,118 @@ const Playlist = () => {
             }
             console.log("TESTING")
             if(!numberOfUsersMoreThanTwo) {
-                if(numberOfUser.NUM_USERS >= 2 ) {
+                if(numberOfUser.NUM_USERS >= 1 ) {
                     numberOfUsersMoreThanTwo = true
                 }
             }
             console.log("TESTING 2.0")
-            if(playlistGlobal) {
-                console.log("HERE 1.0")
-                if(isPlaying == false && playlistGlobal.tracks.length > 0 && numberOfUsersMoreThanTwo == true) {
-                    console.log("HERE 2.0")
-                    play(playlistGlobal.tracks[0].uri, userIDGlobal).then(res => {
-                        isPlaying = true
-                    })
-                }
-            }
+            
         })
 
         socket.on("othersAddItemToQueue", (trackUri) => {
             console.log("Socket client track uri: ", trackUri.trackUri)
-            postAddToQueue(trackUri.trackUri, userIDGlobal).then(res => {
-                console.log("Add to queue to front-end")
+            // postAddToQueue(trackUri.trackUri, userIDGlobal).then(res => {
+            //     console.log("Add to queue to front-end")
                 
                 
+            // })
+        })
+        // socket.on("toPlay", (trackUri) => {
+        //     console.log("CHECKING AND PLAYING", trackUri)
+        //     checkAndPlay()
+        // })
+        // socket.on("pleasePlay", play => {
+        //     if(playlistGlobal) {
+        //         console.log("HERE 1.0")
+        //         if(isPlaying == false && playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
+        //             console.log("HERE 2.0")
+        //             play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
+        //                 isPlaying = true
+        //             })
+        //         }
+        //     }
+        // })
+
+        setInterval(() => {
+            fetchUserCurrPlayingTrack().then(data => {
+                console.log("Get current status code: ", data.statusCode)
+                if (data.statusCode == 204) {
+                    removeTracks().then(playlistInfo => {
+                        playlistGlobal = playlistInfo.serverPlaylist
+                        setPlaylist(playlistInfo.serverPlaylist)
+                        play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
+                            isPlaying = true
+                        })
+                    })
+                } else if (data.statusCode == 200 && data.is_playing == false) {
+                    if(playlistGlobal) {
+                        console.log("HERE 1.0")
+                        if(playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
+                            console.log("HERE 2.0")
+                            play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
+                                // isPlaying = true
+                                currentTrackUri = playlistGlobal[0].trackInfo.trackUri;
+                                if (currentTrackUri !== previousTrackUri) {
+                                    removeTracks().then(playlistInfo => {
+                                        previousTrackUri = currentTrackUri
+                                        playlistGlobal = playlistInfo.serverPlaylist
+                                        setPlaylist(playlistInfo.serverPlaylist)
+                                        
+                                    })
+                                }
+                                
+                            })
+                        }
+                    }
+                }
+                else {
+                    position_ms = data.position_ms
+                    currentTrackUri = data.uri
+                }
             })
-        })
-        socket.on("toPlay", (trackUri) => {
-            console.log("CHECKING AND PLAYING", trackUri)
-            checkAndPlay()
-        })
+        }, 500)
     }, [])
 
+    useEffect(() => {
+        console.log("Useffect update playlist: ", playlistGlobal)
+        setPlaylist(playlistGlobal)
+    }, [playlistGlobal])
+
     const checkMobile = () => {
-        if(window.innerWidth <= 500) {
+        if(window.innerWidth <= 1000) {
             setIsMobile(true)
         } else {
             setIsMobile(false)
         }
     }
 
+    const populateQueue = () => {
+        fetchCollaborativePlaylist().then(data => {
+            playlistGlobal = data.serverPlaylist
+            setPlaylist(data.serverPlaylist);
+        })
+    }
+
     const checkAndPlay = () => {
         fetchCollaborativePlaylist().then(data => {
-            fetchTracks().then(res => {
-                console.log("fetch tracks response: ", res)
-                data.tracks = res
-                console.log("Playlist before: ", playlist)
-                setPlaylist(data)
-                playlistGlobal = data
-                console.log("Playlist after: ", data)
-
-                if(playlistGlobal) {
-                    // console.log("HERE 1.0")
-                    if(isPlaying == false && playlistGlobal.tracks.length > 0 && numberOfUsersMoreThanTwo == true) {
-                        // console.log("HERE 2.0")
-                        console.log("Global Playlist: ", playlistGlobal.tracks[0].trackUri)
-                        // console.log("Global Playlist track uri: ", playlistGlobal.tracks[0].uri)
-                        play(playlistGlobal.tracks[0].trackUri, userIDGlobal).then(res => {
-                            isPlaying = true
-                            player.nextTrack().then(() => {
-                                console.log('Skipped to next track!');
-                            });
-                        })
-                    }
+            playlistGlobal = data.serverPlaylist;
+            setPlaylist(data.serverPlaylist);
+            if(playlistGlobal) {
+                // console.log("HERE 1.0")\
+                //if not playing and playlist has more than one song and more than one user in the room
+                if(isPlaying == false && playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
+                    // console.log("HERE 2.0")
+                    console.log("Global Playlist: ", playlistGlobal[0].trackInfo.trackUri)
+                    
+                    // console.log("Global Playlist track uri: ", playlistGlobal.tracks[0].uri)
+                    play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
+                        isPlaying = true
+                        // player.nextTrack().then(() => {
+                        //     console.log('Skipped to next track!');
+                        // });
+                    })
                 }
-            })
+            }
         })
     }
 
@@ -206,50 +257,22 @@ const Playlist = () => {
     //     })
     // }, [])
 
-    useEffect(() => {
-        if(isPlaying == true) {
-            fetchUserPlaybackState().then(res => {
-                console.log("Current user playback information in front-end: ", res)
-            })
-        }
-    }, [isPlaying])
+    // useEffect(() => {
+    //     if(isPlaying == true) {
+    //         fetchUserPlaybackState().then(res => {
+    //             console.log("Current user playback information in front-end: ", res)
+    //         })
+    //     }
+    // }, [isPlaying])
 
     const fetchCallback = () => {
+        //get playlist info
         fetchCollaborativePlaylist().then(data => {
-            fetchTracks().then(res => {
-                console.log("fetch tracks response: ", res)
-                data.tracks = res
-                console.log("Playlist before: ", playlist)
-                setPlaylist(data)
-                playlistGlobal = data
-                console.log("Playlist after: ", data)
-
-                // if (data) {
-                //     console.log("Playlist is found hahaha")
-                //     console.log("Playlist length haha: ", data.tracks.length)
-                //     if(data.tracks.length > 1 && isPlaying == false) {
-                //         console.log("Playlist is played hahaha")
-                //         play(data.tracks[0].trackUri, userIDGlobal).then(res => {
-                //             console.log("Play response haha: ", res)
-                //             setIsPlaying(true)
-                //             console.log("Prev track before: ", previousTrack)
-                //             previousTrack = data.tracks[0].trackUri
-                //             console.log("Prev track after: ", previousTrack)
-                //             console.log("Track uri: ", data.tracks[0].trackUri)
-                            	
-                //             player.nextTrack().then(() => {
-                //                 console.log('Skipped to next track!');
-                //             });
-                //         })
-
-                //         player.togglePlay().then(() => {
-                //             console.log('Toggled playback!');
-                //             setIsPlaying(true)
-                //             previousTrack = data.tracks[0].trackUri
-                //         });
-                //     }
-                // }
-            })
+            console.log("playlistGlobal: ", playlistGlobal)
+            console.log("data: ", data)
+            playlistGlobal = data.serverPlaylist;
+            console.log("playlistGlobal: ", playlistGlobal)
+            setPlaylist(data.serverPlaylist);
         })
     }
 
@@ -285,6 +308,13 @@ const Playlist = () => {
                     console.log("Current track uri: ", current_track.uri)
                     console.log("Previous track uri: ", previousTrack)
                     
+                    if (position == '0') {
+                        console.log("strings")
+                    }
+                    if (position == 0) {
+                        console.log("int")
+                        socket.emit('signalPlay', {play : true})
+                    }
                     if(previousTrack != '') {
                         console.log("Checking removal condition: ", current_track)
                         // console.log("Playlst[90]: ", playlist.tracks[0].trackUri)
@@ -324,20 +354,20 @@ const Playlist = () => {
                         //     })
                         // }
 
-                        if(current_track.uri != previousTrack) {
-                            console.log("Currently removing")
-                            removeTracks(previousTrack).then(res => {
-                                console.log("Successfully removed: ", res)
+                        // if(current_track.uri != previousTrack && isHost) {
+                        //     console.log("Currently removing")
+                        //     removeTracks(previousTrack).then(res => {
+                        //         console.log("Successfully removed: ", res)
 
-                                fetchCollaborativePlaylist().then(data => {
-                                    fetchTracks().then(res => {
-                                        data.tracks = res
-                                        setPlaylist(data)
-                                        playlistGlobal = data
-                                    })
-                                })
-                            })      
-                        }
+                        //         fetchCollaborativePlaylist().then(data => {
+                        //             fetchTracks().then(res => {
+                        //                 data.tracks = res
+                        //                 setPlaylist(data)
+                        //                 playlistGlobal = data
+                        //             })
+                        //         })
+                        //     })      
+                        // }
 
                         previousTrack = current_track.uri
                     } 
@@ -354,6 +384,30 @@ const Playlist = () => {
                 })
 
                 player.connect()
+                // setInterval(player.getCurrentState().then(state => {
+                //     if (!state) {
+                //       console.error('User is not playing music through the Web Playback SDK');
+                //       return;
+                //     }
+                //     if (state && !isPlaying) {
+                //         if(playlistGlobal) {
+                //             console.log("HERE 3.0")
+                //             if(isPlaying == false && playlistGlobal.tracks.length > 0 && numberOfUsersMoreThanTwo == true) {
+                //                 console.log("HERE 4.0")
+                //                 play(playlistGlobal.tracks[0].uri, userIDGlobal).then(res => {
+                //                     isPlaying = true
+                //                 })
+                //             }
+                //         }
+                //     }
+                //     let {
+                //       current_track,
+                //       next_tracks: [next_track]
+                //     } = state.track_window;
+                  
+                //     console.log('Currently Playing', current_track);
+                //     console.log('Playing Next', next_track);
+                // }), 100)
             }
         })
     }
@@ -362,13 +416,13 @@ const Playlist = () => {
         isMobile == false ? (
             <div className="App">
                 <div className="list">
-                    <List initSocket={socket} callback={fetchCallback} playlist={playlist}/>
+                    <List initSocket={socket} callback={fetchCallback} playlist={playlistGlobal}/>
                     <button className="invite" onClick={() => {
                         alert('http://localhost:8000/')
                     }}>Invite</button>
                 </div>
                 <Player />
-                <Chatbox initSocket={socket}/>
+                <Chatbox room={'100'} username={userIDGlobal} initSocket={socket}/>
             </div>
         ) : (
             <div className="App">

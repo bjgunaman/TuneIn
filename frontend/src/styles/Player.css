@@ -73,16 +73,20 @@
     justify-content: center;
 }
 
-@media(max-width: 500px) {
+@media(max-width: 1000px) {
     .upper {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        margin-bottom: 1rem;
+        margin-top: 1rem;
+    }
+
+    .mobile-upper {
+        
     }
 
     .player {
-        padding: 0 4rem;
+        min-height: 120px;
     }
 }
