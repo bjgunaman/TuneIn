@@ -17,6 +17,7 @@ class Chatbox extends React.Component {
             userInput: '',
             messages: [],
         }
+        this.image = props.image
         console.log("ez clap")
         socket = props.initSocket;//io('localhost:8080');
         console.log("socket:",socket);
@@ -27,15 +28,15 @@ class Chatbox extends React.Component {
         // await this.setState({username: this.state.username});
         // await this.setState({room: this.state});
         //console.log(this.state.username);
-
-        socket.emit('joining', {username: this.state.username, room: this.state.room});
+        console.log("THIS IMAGE: ", this.image);
+        socket.emit('joining', {username: this.state.username, room: this.state.room, image: this.image});
         //console.log("joining");
         socket.on('serverMessage', (receivedMessage) => {
             this.setState({messages: [...this.state.messages, receivedMessage]});
         })
         socket.on('broadcastedMessage', (receivedMessage) => {
-            console.log("received Message:")
-            console.log(receivedMessage);
+            console.log("received Message:", receivedMessage);
+            
             this.setState({messages: [...this.state.messages, receivedMessage]});
             console.log('broadcastMessage');
             console.log(this.state.messages);
@@ -62,7 +63,7 @@ class Chatbox extends React.Component {
        const listOfMessages = this.state.messages.map( (message, index) => {
             return (
                 <div key={index}>
-                    <Message message={message} username={this.state.username}/>
+                    <Message image={this.image} message={message} username={this.state.username}/>
                 </div>
             );
        });

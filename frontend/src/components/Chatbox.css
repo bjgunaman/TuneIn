@@ -113,10 +113,15 @@
 
 .with-avatar {
     border-radius: 50%;
-    background-color: blue;
     height:1.3em;
     width: 1.3em;
 
+}
+
+.profileImage {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 50%;
 }
 
 .user-input {
@@ -143,7 +148,8 @@
 #send-button {
     width: 20%;
     padding-left: 2px;
-    color: var(--light-grey-2)
+    color: var(--light-grey-2);
+    transform: rotate(45deg);
 }
 
 @media(max-width:1000px) {

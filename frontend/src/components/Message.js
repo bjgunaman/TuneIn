@@ -5,6 +5,7 @@ const Message = (props) => {
     let location = '';
     let avatar = '';
     let server = '';
+    let image = '';
     console.log(props.message.username);
     console.log(props.username);
     if (props.message.username === props.username) {
@@ -22,6 +23,12 @@ const Message = (props) => {
         server = 'false'
     }
 
+    console.log("PROPS IMAGE: ", props.message.image);
+    if (props.message.image) {
+        image = props.message.image;
+    } else {
+        image = '';
+    }
     const multClassNames = classNames({
         'single-message': true,
         'right': location === 'right',
@@ -32,7 +39,7 @@ const Message = (props) => {
     console.log(multClassNames);
     return (
         <div className={multClassNames}>
-            <div className={avatar}></div>
+            <div className={avatar} style={{backgroundColor: props.message.userColor}}><img className="profileImage" src={image.toString()}/></div>
             <div className="text">{props.message.textMessage}</div>
         </div>
     )

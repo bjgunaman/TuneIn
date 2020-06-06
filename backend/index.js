@@ -20,6 +20,7 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 let userMap = new Map();
+let coloursUsed = new Map()
 
 let appKey = '7f6407d2ff194a87a5236a464044ec4e';
 let appSecret = '040e7b594df34f578a39875342e941bf';
@@ -106,23 +107,29 @@ app.get('/setcookie', requireUser,
     NUM_USERS += 1
 
     res.cookie('songs-with-friends', new Date());
-    console.log("yuh")
-    //console.log(ACCESS_TOKEN)
-
+    let images = ''
+    console.log(req.user._json);
+    if (req.user._json.images.length > 0 ) {
+      images = req.user._json.images[0].url
+    }
+    console.log("USER NAME:", req.user._json.display_name);
     if(req.user.id == MASTER_PROFILE.id) {
       res.redirect('/?' + 
       querystring.stringify({
         id: req.user.id,
-        host: true
+        host: true,
+        username: req.user._json.display_name,
+        image: images
       }))
     } else {
       res.redirect('/?' + 
       querystring.stringify({
-        id: req.user.id
+        id: req.user.id,
+        username: req.user._json.display_name,
+        image: images
       }))
     }
-  }
-);
+})
 
 app.get('/searchTrack', (req,res) => {
   console.log("searchTrack");
@@ -406,6 +413,15 @@ function requireLogin(req, res, next) {
   }
 };
 
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 const port = process.env.PORT || 8000;
 server.listen(8080, () => console.log('listening on port 8080'));
 app.listen(port);
@@ -415,13 +431,17 @@ console.log('App is listening on port ' + port);
 io.on('connection', (socket) => {
     console.log('We have a new connection!!!');
     socket.on('joining', (userInfo) => {
-        userMap.set(socket.id, {username: userInfo.username, room: userInfo.room});
-        //socket.emit('message', {user: 'admin', text: `${user.name}, welcome to this chat room!`});
-        console.log("emitting to room");
-        socket.broadcast.to(userInfo.room).emit('serverMessage', { username: 'server', textMessage: `${userInfo.username} has joined the channel`});
-        socket.broadcast.to(userInfo.room).emit('newUserIncoming', { NUM_USERS });
-        socket.join(userInfo.room);
-        console.log("joining");      
+      let color = getRandomColor();
+      socket.broadcast.to(userInfo.room).emit('serverMessage', { username: 'server', textMessage: `${userInfo.username} has joined the channel`});
+      socket.broadcast.to(userInfo.room).emit('newUserIncoming', { NUM_USERS });
+      socket.join(userInfo.room);
+      while (coloursUsed.get(color)) {
+        color = getRandomColor();
+      }
+      coloursUsed.set(color, true);
+      console.log("COLOURS", color);
+      userMap.set(socket.id, {username: userInfo.username, room: userInfo.room, color, image: userInfo.image});
+            
     });
     socket.on('getNumberOfUsers', () => {
       console.log("RECEIVE USER REQUEST");
@@ -439,7 +459,7 @@ io.on('connection', (socket) => {
         const userInfo = userMap.get(socket.id);
         console.log(message);
         console.log(userInfo);
-        io.to(userInfo.room).emit('broadcastedMessage', {username: userInfo.username, textMessage: message});
+        io.to(userInfo.room).emit('broadcastedMessage', {username: userInfo.username, textMessage: message, userColor: userInfo.color, image: userInfo.image});
     });
     socket.on('signalPlay', (play) => {
       socket.broadcast.to('100').emit('pleasePlay', play);

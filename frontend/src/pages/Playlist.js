@@ -37,6 +37,8 @@ let currentTrackName = ''
 let currentArtistName = ''
 let currentAlbumName = ''
 let currentDuration = ''
+let username = '';
+let image = '';
 
 
 const Playlist = () => {
@@ -57,6 +59,8 @@ const Playlist = () => {
         isHost = true
     }
     console.log("userIDGlobal: ",userIDGlobal)
+    image = searchParams.get("image");
+    username = searchParams.get("username");
 
     useEffect(() => {
         console.log("Fetch playlist")
@@ -189,13 +193,13 @@ const Playlist = () => {
                     }}>Invite</button>
                 </div>
                 <Player trackName={currentTrackName} artistName={currentArtistName} albumName={currentAlbumName} duration={currentDuration} elapsedTime={elapsed}/>
-                <Chatbox room={'100'} username={userIDGlobal} initSocket={socket}/>
+                <Chatbox image={image} room={'100'} username={username} initSocket={socket}/>
             </div>
         ) : (
             <div className="App">
                 {
                     showChatbox ? (
-                        <Chatbox room={'100'} username={userIDGlobal} initSocket={socket} hideChat={() => handleShowChatbox(false)} />
+                        <Chatbox image={image} room={'100'} username={username} initSocket={socket} hideChat={() => handleShowChatbox(false)} />
                     ) : null
                 }
                 <div className="mobile-top-header">
