@@ -30,4 +30,5 @@ Raylph Evangelista, SID: 913184220
 
 ### Some Important Notes
 - We sync the songs at the start of the next song, so when the host changes songs, everyone starts the next song
-- Wake up your device shortly before logging in since Spotify needs to detect your device as active
+- Wake up your device and do a play and pause shortly before logging in since Spotify needs to detect your device as active
+- If your Spotify app doesn't play the song (especially the phone app), try restarting the Spotify app one or two times because Spotify might not detect this device as active
