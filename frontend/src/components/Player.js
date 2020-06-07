@@ -33,15 +33,10 @@ const Player = (props) => {
 
 
     useEffect(() => {
-        console.log("fetching/.....")
-        console.log("Window width: ", props.windowWidth)
-
         window.addEventListener("resize", checkMobile)
     }, [])
 
-    useEffect(() => {
-        console.log("Playlist updated: ", props.playlist)
-        
+    useEffect(() => {        
         convertedDuration = convertDuration(props.duration)
 
         setCurrentAlbumName(props.albumName)
@@ -51,7 +46,6 @@ const Player = (props) => {
     }, [props.trackName, props.artistName, props.albumName, props.duration])
 
     useEffect(() => {
-        console.log("Refreshed")
         convertedElapsed = convertDuration(props.elapsedTime)
         setElapsed(convertedElapsed)
     }, [props.elapsedTime])
@@ -83,8 +77,6 @@ const Player = (props) => {
             minutes: stringMinutes,
             seconds: stringSeconds
         }
-
-        console.log("Converted duration: ", res)
 
         return res   
     }

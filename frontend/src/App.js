@@ -24,7 +24,6 @@ function App() {
           <Playlist />
         </Route>
       </Switch>
-      {/* <Redirect to="/playlist" />  */}
     </Router>
   );
 }

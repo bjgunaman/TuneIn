@@ -55,15 +55,13 @@ const Playlist = () => {
     var searchParams = new URLSearchParams(window.location.search);
     userIDGlobal = searchParams.get("id")
     if(searchParams.get("host") == 'true') {
-        console.log("HOST SET")
         isHost = true
     }
-    console.log("userIDGlobal: ",userIDGlobal)
+
     image = searchParams.get("image");
     username = searchParams.get("username");
 
     useEffect(() => {
-        console.log("Fetch playlist")
         setShowChatbox(false)
         setUserID(searchParams.get("id"))
 
@@ -77,36 +75,29 @@ const Playlist = () => {
         
         socket.emit('getNumberOfUsers')
         socket.on('receiveNumberOfUsers', (numberOfUser) => {
-            console.log("CURRENTNUMBEROFUSER2.0:", numberOfUser.NUM_USERS)
             if (numberOfUsers != numberOfUser.NUM_USERS) {
                 setNumberOfUsers(numberOfUser.NUM_USERS)
             }
-            console.log("TESTING3.0")
+
             if(!numberOfUsersMoreThanTwo) {
                 if(numberOfUser.NUM_USERS >= 1 ) {
                     numberOfUsersMoreThanTwo = true
                 }
             }
-            console.log("TESTING 4.0")
         })
         socket.on('newUserIncoming', (numberOfUser) => {
-
-            console.log("CURRENTNUMBEROFUSER:", numberOfUser.NUM_USERS)
             if (numberOfUsers != numberOfUser.NUM_USERS) {
                 setNumberOfUsers(numberOfUser.NUM_USERS)
             }
-            console.log("TESTING")
+
             if(!numberOfUsersMoreThanTwo) {
                 if(numberOfUser.NUM_USERS >= 1 ) {
                     numberOfUsersMoreThanTwo = true
                 }
-            }
-            console.log("TESTING 2.0")
-            
+            }            
         })
 
         socket.on("othersAddItemToQueue", (trackUri) => {
-            console.log("Socket client track uri: ", trackUri.trackUri)
         })
 
         socket.on('pleaseFetch', () => {
@@ -115,14 +106,10 @@ const Playlist = () => {
 
         setInterval(() => {
             fetchUserCurrPlayingTrack().then(data => {
-                console.log("Get current status code: ", data.statusCode)
                 if (data.statusCode == 200 && data.is_playing == false) {
                     if(playlistGlobal) {
-                        console.log("HERE 1.0")
                         if(playlistGlobal.length > 0 && numberOfUsersMoreThanTwo == true) {
-                            console.log("HERE 2.0")
                             play(playlistGlobal[0].trackInfo.trackUri, userIDGlobal).then(res => {
-                                // isPlaying = true
                                 currentTrackUri = playlistGlobal[0].trackInfo.trackUri;
                                 currentTrackName = playlistGlobal[0].trackInfo.trackName;
                                 currentArtistName = playlistGlobal[0].trackInfo.artistName.join(' ')
@@ -130,7 +117,6 @@ const Playlist = () => {
                                 currentDuration = playlistGlobal[0].trackInfo.duration
 
                                 if (currentTrackUri !== previousTrackUri) {
-                                    console.log("IS HOST: ", isHost);
                                     if(isHost) {
                                         removeTracks().then(playlistInfo => {
                                             playlistGlobal = playlistInfo.serverPlaylist
@@ -147,7 +133,6 @@ const Playlist = () => {
                 }
                 else {
                     position_ms = data.position_ms
-                    console.log("Position ms is updated: ", position_ms)
                     setElapsedTime(data.position_ms)
                     currentTrackUri = data.uri
                 }
@@ -156,7 +141,6 @@ const Playlist = () => {
     }, [])
 
     useEffect(() => {
-        console.log("Useffect update playlist: ", playlistGlobal)
         setPlaylist(playlistGlobal)
     }, [playlistGlobal])
 
@@ -171,10 +155,7 @@ const Playlist = () => {
     const fetchCallback = () => {
         //get playlist info
         fetchCollaborativePlaylist().then(data => {
-            console.log("playlistGlobal: ", playlistGlobal)
-            console.log("data: ", data)
             playlistGlobal = data.serverPlaylist;
-            console.log("playlistGlobal: ", playlistGlobal)
             setPlaylist(data.serverPlaylist);
         })
     }

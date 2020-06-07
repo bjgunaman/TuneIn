@@ -9,7 +9,6 @@ export const createCollaborativePlaylist = () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data)
         return data
     })
     .catch(error => {
@@ -23,8 +22,6 @@ export const fetchCollaborativePlaylist = () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Playlist data: ", data)
-
         if (data.status == 404) {
             return data.status
         } else {
@@ -41,9 +38,7 @@ export const fetchTracks = () => {
     return fetch('/fetchTracks', {
         method: 'GET'
     }).then(response => response.json())
-    .then(data => {
-        console.log("Playlist tracks: ", data)
-        
+    .then(data => {        
         return data
     })
 }
@@ -54,7 +49,6 @@ export const searchTracks = (query) => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data)
         return data
     })
     .catch(error => {
@@ -68,18 +62,15 @@ export const play = (uri, user_id) => {
         method: 'PUT'
     })
     .then(response => {
-        console.log("Play response: ", response)
         return response.json()
     })
     .then(data => {
-        console.log(data)
         return data
     })
     .catch(error => console.log(error))
 }
-//{albumName: "7 EP", artistName: Array(2), trackName: "Old Town Road - Remix", trackUri: "spotify:track:2YpeDb67231RjR0MgVLzsG"}
+
 export const addItemsToPlaylist = (trackInfo) => {
-    console.log("trackInfo: ",trackInfo);
     return fetch('/addItems?trackUri=' + trackInfo.trackUri + '&trackName=' + trackInfo.trackName + '&albumName=' + trackInfo.albumName + '&artistName', {
         method: 'POST',
         headers: {
@@ -89,7 +80,6 @@ export const addItemsToPlaylist = (trackInfo) => {
     })
     .then(response => response.json())
     .then( data => {
-        console.log(data)
         return data
     }).catch(error => {
         console.log(error)
@@ -103,7 +93,7 @@ export const removeItemFromPlaylist = (trackUri) => {
     })
     .then(response => response.json())
     .then( data => {
-        console.log(data)
+        return data
     })
 }
 
@@ -113,7 +103,6 @@ export const fetchUserPlaybackState = () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Fetch user playback state: ", data)
         return data
     })
 }
@@ -124,7 +113,6 @@ export const fetchNumberofUsers = () => {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Number of users: ", data)
         return data
     })
 }
@@ -169,7 +157,6 @@ export const playPlayer = ({
     }
   } }) => {
     getOAuthToken(access_token => {
-        console.log(access_token)
         fetch('https://api.spotify.com/v1/me/player/play?device_id=' + id, {
             method: 'PUT',
             body: JSON.stringify({ 
@@ -181,7 +168,6 @@ export const playPlayer = ({
             },
         })
         .then(response => {
-            console.log("Player error response: ", response)
         })
     })
     

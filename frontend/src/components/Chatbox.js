@@ -9,7 +9,6 @@ let socket;
 class Chatbox extends React.Component {
 
     constructor(props) {
-        console.log("Current username: ", props.username)
         super(props);
         this.state = {
             username: props.username,
@@ -18,30 +17,18 @@ class Chatbox extends React.Component {
             messages: [],
         }
         this.image = props.image
-        console.log("ez clap")
         socket = props.initSocket;//io('localhost:8080');
-        console.log("socket:",socket);
         this.sendMessage = this.sendMessage.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
     }
     async componentDidMount() {
-        // await this.setState({username: this.state.username});
-        // await this.setState({room: this.state});
-        //console.log(this.state.username);
-        console.log("THIS IMAGE: ", this.image);
         socket.emit('joining', {username: this.state.username, room: this.state.room, image: this.image});
-        //console.log("joining");
         socket.on('serverMessage', (receivedMessage) => {
             this.setState({messages: [...this.state.messages, receivedMessage]});
         })
         socket.on('broadcastedMessage', (receivedMessage) => {
-            console.log("received Message:", receivedMessage);
-            
             this.setState({messages: [...this.state.messages, receivedMessage]});
-            console.log('broadcastMessage');
-            console.log(this.state.messages);
         })
-        //console.log(this.state.username);
     }
 
 

@@ -15,13 +15,6 @@ const List = (props) => {
     const[showPopUp, setShowPopUp] = useState(false)
 
     useEffect(() => {
-        // console.log(props.playlist)
-        // setPlaylist(props.playlist)
-        console.log(props.playlist)
-    }, [])
-
-    useEffect(() => {
-        console.log("Playlist updated: ", props.playlist)
         setPlaylist(props.playlist)
     }, [props.playlist])
 

@@ -11,20 +11,15 @@ const Search = props => {
     const [track, setTrack] = useState('')
     const [searchResult, setSearchResult] = useState(null)
     const socket = props.initSocket;
-    useEffect(() => {
-        
-    }, [])
 
     const handleSearch = () => {
         searchTracks(track).then(res => {
             setSearchResult(res)
-            console.log("RES:", res)
         })
     }
 
     const handleAdd = (trackInfo) => {
         addItemsToPlaylist(trackInfo).then(res => {
-            console.log("Snapshot id: ", res)
             socket.emit("addSongsFetchNew")
             props.callback()
             props.handle()

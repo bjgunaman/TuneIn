@@ -33,6 +33,7 @@ let PLAYLISTINFO = null
 let NUM_USERS = 0
 var IS_PLAYING = false
 let serverPlaylist = []
+
 passport.serializeUser(function(user, done) {
 	done(null, user);
 })
@@ -50,13 +51,11 @@ passport.use(
 	},
 	function(accessToken, refreshToken, expires_in, profile, done) {
 		process.nextTick(function() {
-      // console.log("Got profile: ", profile);
       if(!ACCESS_TOKEN) {
         ACCESS_TOKEN = accessToken
       }
 
       ACCESS_TOKEN_MAP.set(profile.id, accessToken);
-      console.log("Token map: ", ACCESS_TOKEN_MAP)
 
       if(!MASTER_PROFILE) {
         MASTER_PROFILE = profile
@@ -66,8 +65,6 @@ passport.use(
     });
   })
 );
-
-console.log("set up pipeline");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json({
@@ -108,11 +105,9 @@ app.get('/setcookie', requireUser,
 
     res.cookie('songs-with-friends', new Date());
     let images = ''
-    console.log(req.user._json);
     if (req.user._json.images.length > 0 ) {
       images = req.user._json.images[0].url
     }
-    console.log("USER NAME:", req.user._json.display_name);
     if(req.user.id == MASTER_PROFILE.id) {
       res.redirect('/?' + 
       querystring.stringify({
@@ -132,7 +127,6 @@ app.get('/setcookie', requireUser,
 })
 
 app.get('/searchTrack', (req,res) => {
-  console.log("searchTrack");
   const userQuery = req.query.query
   let uri  = BASE_SPOTIFY_URL + '/search?query=' + userQuery + '&type=track';
   let searchOptions = {
@@ -142,7 +136,6 @@ app.get('/searchTrack', (req,res) => {
   }
   request.get(searchOptions, (error, response, body) => {
     if(!error && response.statusCode == 200) {
-      // console.log(body);
       const tracksInfo = body.tracks.items.map(item => {
         return {
           albumName: item.album.name,
@@ -155,9 +148,7 @@ app.get('/searchTrack', (req,res) => {
       })
 
       res.send(tracksInfo)
-      //console.log(tracksInfo);
     } else {
-      console.log("Error Search");
       res.send({
         status: 404
       })
@@ -166,7 +157,6 @@ app.get('/searchTrack', (req,res) => {
 })
 
 app.get('/getUserPlaybackState', (req, res) => {
-  console.log("Getting user's playback state")
   let uri = BASE_SPOTIFY_URL + '/me/player'
   let getPlaybackOptions = {
     url: uri,
@@ -181,7 +171,6 @@ app.get('/getUserPlaybackState', (req, res) => {
           res.send(null)
         } else {
           const playbackInfo = body
-          // console.log("Playback Info: ", playbackInfo)
           let data = {
             position_ms: playbackInfo.progress_ms,
             trackUri: playbackInfo.uri,
@@ -189,11 +178,9 @@ app.get('/getUserPlaybackState', (req, res) => {
             status: 200
           }
           
-          // console.log("DATA FROM USER PLAYBACK", data)
           res.send(data)
         }
       } else {
-        console.log(error)
         res.send(error)
       }
     })  
@@ -205,14 +192,8 @@ app.get('/getUserPlaybackState', (req, res) => {
 })
 
 app.put('/playPlaylist', (req, res) => {
-  console.log('playing playlist', req.query)
-  //const playlistUri = PLAYLIST.uri
   let uri  = BASE_SPOTIFY_URL + '/me/player/play'
   let data = {
-    // context_uri: PLAYLIST.uri,
-    // offset: {
-    //   uri: req.query.trackUri
-    // }
     uris: [req.query.trackUri],
     position_ms: 0
   }
@@ -223,15 +204,12 @@ app.put('/playPlaylist', (req, res) => {
     body: data
   }
   request.put(playOptions, (error, response, body) => {
-    // console.log("Play response in server: ", response)
     if(!error && response.statusCode === 204) {
-      console.log("Play response: ", response)
       IS_PLAYING = true
       res.send({
         status: 204
       })
     } else {
-      console.log(error)
       res.send({
         status: 404
       })
@@ -240,8 +218,6 @@ app.put('/playPlaylist', (req, res) => {
 })
 
 app.get('/fetchTracks', (req, res) => {
-  console.log('Fetching Tracks')
-
   let uri  = BASE_SPOTIFY_URL + '/playlists/' + PLAYLIST.id + '/tracks'
 
   let tracksGetOption = {
@@ -265,7 +241,6 @@ app.get('/fetchTracks', (req, res) => {
 
       res.send(playlistTracks) 
     } else {
-      console.log("Error GET tracks")
       res.send({
         status: 404
       })
@@ -274,7 +249,6 @@ app.get('/fetchTracks', (req, res) => {
 })
 
 app.get('/fetchPlaylist', (req, res) => {
-  console.log("fetching playlist");
   res.send({ serverPlaylist });
 
 })
@@ -290,18 +264,12 @@ app.delete('/removeItems', (req, res) => {
   res.send({serverPlaylist});
 })
 app.post('/addItems', (req, res) => {
-  console.log("adding Items");
-  console.log(req.body);
   const trackInfo = req.body;
-  console.log("TRACK INFO", trackInfo);
   serverPlaylist.push(trackInfo);
-  console.log("SERVER PLAYLIST", serverPlaylist);
   res.send({ serverPlaylist });
 })
 
 app.post('/addToQueue', (req, res) => {
-  console.log("Adding to queue in server")
-  console.log("Track URI: ", req.query.trackUri)
   let uri = BASE_SPOTIFY_URL + '/me/player/queue?uri=' + req.query.trackUri
 
   let addToQueueOptions = {
@@ -311,18 +279,11 @@ app.post('/addToQueue', (req, res) => {
   }
 
   request.post(addToQueueOptions, (error, response, body) => {
-    console.log("Successfully added to queue")
-    // console.log("Response of add to queue: ", response)
-
     if(!error && response.statusCode == 204) {
-      console.log("Successfully added to queue 2")
-
       res.send({
         statusCode: response.statusCode
       })
     } else {
-      console.log(error);
-      console.log("Error add to queue")
       res.send({
         status: 404
       })
@@ -331,8 +292,6 @@ app.post('/addToQueue', (req, res) => {
 })
 
 app.get('/fetchAccessToken', (req, res) => {
-  console.log("User access tokens: ", ACCESS_TOKEN_MAP)
-  console.log("User access token in fetchAccessToken: ", req.query.user_id)
   res.send({
     access_token: ACCESS_TOKEN_MAP.get(req.query.user_id)
   })
@@ -345,7 +304,6 @@ app.get('/fetchPlaylistUri', (req, res) => {
 })
 
 app.get('/fetchUserCurrPlaying', (req, res) => {
-  console.log("fetching Master's currently playing track")
   let uri = BASE_SPOTIFY_URL + '/me/player/currently-playing'
 
   let fetchUserCurrPlayingOptions = {
@@ -355,9 +313,6 @@ app.get('/fetchUserCurrPlaying', (req, res) => {
   }
 
   request.get(fetchUserCurrPlayingOptions, (error, response, body) => {
-    console.log("Fetched User currently playing Track")
-    console.log("Successfully update playback: ", response.statusCode)
-
     if(!error && (response.statusCode == 204 || response.statusCode == 200)) {
 
       if(response.statusCode == 200) {
@@ -373,8 +328,6 @@ app.get('/fetchUserCurrPlaying', (req, res) => {
         })
       }
     } else {
-      console.log(error);
-      console.log("Error get user playback")
       res.send({
         status: 404
       })
@@ -423,13 +376,12 @@ function getRandomColor() {
 }
 
 const port = process.env.PORT || 8000;
-server.listen(8080, () => console.log('listening on port 8080'));
+server.listen(8080, () => console.log('Socket is listening on port 8080'));
 app.listen(port);
 
 console.log('App is listening on port ' + port);
 
 io.on('connection', (socket) => {
-    console.log('We have a new connection!!!');
     socket.on('joining', (userInfo) => {
       let color = getRandomColor();
       socket.broadcast.to(userInfo.room).emit('serverMessage', { username: 'server', textMessage: `${userInfo.username} has joined the channel`});
@@ -439,26 +391,18 @@ io.on('connection', (socket) => {
         color = getRandomColor();
       }
       coloursUsed.set(color, true);
-      console.log("COLOURS", color);
       userMap.set(socket.id, {username: userInfo.username, room: userInfo.room, color, image: userInfo.image});
             
     });
     socket.on('getNumberOfUsers', () => {
-      console.log("RECEIVE USER REQUEST");
       socket.emit('receiveNumberOfUsers', { NUM_USERS });
     });
     socket.on("addItemToPlaylist", (trackInfo) => {
-      // const userInfo = userMap.get(socket.id);
-      console.log("Socket server track uri: ", trackInfo)
       socket.broadcast.to('100').emit("othersAddItemToQueue", trackInfo);
-      console.log("EMITTING");
       io.to('100').emit("toPlay", trackInfo);
-      console.log("EMITTED")
     })
     socket.on('sendMessage', (message) => {
         const userInfo = userMap.get(socket.id);
-        console.log(message);
-        console.log(userInfo);
         io.to(userInfo.room).emit('broadcastedMessage', {username: userInfo.username, textMessage: message, userColor: userInfo.color, image: userInfo.image});
     });
     socket.on('signalPlay', (play) => {
